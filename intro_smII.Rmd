@@ -1,8 +1,7 @@
 ---
-title: "Statistische Modellbildung II <br> Tutorium"
+title: "<br> Statistische Modellbildung II <br> Tutorium"
 subtitle: ""
-author: 'Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; favstats.eu</a> <br> <a href="https://twitter.com/FabioFavusMaxim"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @FabioFavusMaxim</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a>'
-date: "2018-17-09"
+author: 'Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; favstats.eu</a> <br> <a href="https://twitter.com/FabioFavusMaxim"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @FabioFavusMaxim</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-17-09'
 output: 
   xaringan::moon_reader:
     lib_dir: libs
