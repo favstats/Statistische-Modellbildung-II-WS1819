@@ -24,12 +24,12 @@
 body {
   font-family: 'Droid Serif', 'Palatino Linotype', 'Book Antiqua', Palatino, 'Microsoft YaHei', 'Songti SC', serif;
   font-weight: normal;
-  color: #FFFFFF;
+  color: #272822;
 }
 h1, h2, h3 {
   font-family: 'Yanone Kaffeesatz';
   font-weight: normal;
-  color: #FFFFFF;
+  color: #252525;
 }
 .remark-slide-content {
   background-color: #FFFFFF;
@@ -182,16 +182,16 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
 
 .title-slide h2:nth-of-type(1) {
     font-size: 200%;
-    text-align: left;
+    text-align: right;
 }
 
 .title-slide h3:nth-of-type(1) {
     font-size: 120%;
-    text-align: left;
+    text-align: right;
 }
 
 
 .title-slide {
-  background-image: url(https://raw.githubusercontent.com/favstats/Statistische-Modellbildung-II-WS1819/master/images/pptx_images.png);
+  background-image: url(images/pptx_images.png);
   background-size: cover;
 }

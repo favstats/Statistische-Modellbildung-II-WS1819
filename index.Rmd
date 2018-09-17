@@ -1,0 +1,79 @@
+---
+title: "Statistische Modellbildung II: Tutorium"
+subtitle: ""
+author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; favstats.eu</a> <br> <a href="https://twitter.com/FabioFavusMaxim"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @FabioFavusMaxim</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-17-09'
+output: 
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      highlightLanguage: r
+    includes:
+      in_header: header.html      
+    countIncrementalSlides: false
+    css: xaringan-themer.css
+---
+
+
+
+    
+
+```{r xaringan-themer, include = FALSE}
+#library(xaringanthemer)
+# mono_accent(base_color = "#252525", link_color	= "rgb(198, 219, 239)")
+```
+
+<style>
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+<style>
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+</style>
+
+
+```{r setup, echo = F, include=F}
+# include=FALSE
+options(htmltools.dir.version = FALSE)
+
+pacman::p_load(tidyverse, xaringan)
+
+knitr::opts_chunk$set(echo = F, warning = F, error = F, message = F)
+
+```
+
+
+
+# Eckdaten
+
+
+## Donnerstags, 14:00 – 15:30 
+
+## beginnend ab 26. Oktober 2018
+
+## Raum: Breitscheidstraße 2 <br> CIP – Pool 5.005 (5. Stock)
+
+
+
+
+
