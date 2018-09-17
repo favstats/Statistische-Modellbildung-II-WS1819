@@ -187,14 +187,8 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
     font-size: 120%;
 }
 
+
 .title-slide {
-	top: 40px;
-    left:   20px;
-    height: 40px;
-    width: 120px;
-  background-image: url(https://www.beschaeftigte.uni-stuttgart.de/uni-services/oeffentlichkeitsarbeit/corporate-design/cd-dateien/01_Logo/png/unistuttgart_logo_deutsch_cmyk-01.png);
-  background-position: top left 20px;
-	background-size: 30%;
-	border-bottom: 0px solid  #522D80;
-	box-shadow:  0 55px 0 #fff;
+  background-image: url(https://upload.wikimedia.org/wikipedia/commons/3/39/Naruto_Shiki_Fujin.svg);
+  background-size: cover;
 }
