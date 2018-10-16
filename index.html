@@ -3,7 +3,7 @@
   <head>
     <title>Statistische Modellbildung II: Tutorium</title>
     <meta charset="utf-8">
-    <meta name="author" content=" Kontakt:  Fabio Votta      favstats     favstats.eu      @FabioFavusMaxim    fabio.votta@gmail.com      2018-17-09" />
+    <meta name="author" content=" Kontakt:  Fabio Votta      favstats     favstats.eu      @FabioFavusMaxim    fabio.votta@gmail.com      2018-16-10" />
     <script src="https://use.fontawesome.com/5235085b15.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
@@ -12,7 +12,7 @@
 class: center, middle, inverse, title-slide
 
 # Statistische Modellbildung II: Tutorium
-### <br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>  favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>  favstats.eu</a> <br> <a href="https://twitter.com/FabioFavusMaxim"> <i class="fa fa-twitter fa-fw"></i>  <span class="citation">@FabioFavusMaxim</span></a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>  fabio.votta@gmail.com</a> <br><br><br><br> 2018-17-09
+### <br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>  favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>  favstats.eu</a> <br> <a href="https://twitter.com/FabioFavusMaxim"> <i class="fa fa-twitter fa-fw"></i>  <span class="citation">@FabioFavusMaxim</span></a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>  fabio.votta@gmail.com</a> <br><br><br><br> 2018-16-10
 
 ---
 
@@ -101,6 +101,58 @@ class: center, middle, inverse, title-slide
 
 ---
 
+class: center
+
+**SPSS Code**
+
+&lt;img src="images/spss_code.png" alt="" width="480" height="150"&gt;
+
+--
+
+**SPSS Output**
+
+&lt;img src="images/spss_output.png" alt="" width="600" height="300"&gt;
+
+---
+
+
+
+**R Code**
+
+
+```r
+mod1 &lt;- lm(feel_eu ~ geburtsjahr + class + linksrechts, data = euro)
+
+texreg::texreg(model1)
+```
+
+--
+
+**R Output**
+
+&lt;img src="images/r_table.png" alt="" width="300" height="400"&gt;
+
+---
+
+## Visualisierung
+
+
+```r
+sjPlot::plot_model(mod1, show.p = T, show.values = T)
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+background-image: url("images/map_example.png")
+background-position: 50% 50%
+background-size: 100%
+class: center, top
+
+## Visualisierung
+---
 
 ## Fragen
 
@@ -126,7 +178,7 @@ Mitnahme des eigenen Laptops ist empfohlen
 
 &lt;br&gt;
 
-**Installation von SPSS 24 auf dem Laptop:**
+**Installation von SPSS 25 auf dem Laptop:**
 
 http://www.stud.uni-stuttgart.de/dienste/software/spss.html
 
@@ -145,6 +197,8 @@ class: center, middle
 
 
 ##&lt;a href="mailto:fabio-antonello.votta@sowi.uni-stuttgart.de"&gt;fabio-antonello.votta@sowi.uni-stuttgart.de&lt;/a&gt;
+
+Mit Betreff: SMII Tutorium - Aufgabe X - [DEIN NAME]
 
 #bis jeweils Montag um 12 Uhr senden!
 

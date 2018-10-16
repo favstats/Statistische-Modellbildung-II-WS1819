@@ -1,7 +1,7 @@
 ---
 title: "Statistische Modellbildung II: Tutorium"
 subtitle: ""
-author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; favstats.eu</a> <br> <a href="https://twitter.com/FabioFavusMaxim"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @FabioFavusMaxim</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-17-09'
+author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; favstats.eu</a> <br> <a href="https://twitter.com/FabioFavusMaxim"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @FabioFavusMaxim</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-16-10'
 output: 
   xaringan::moon_reader:
     lib_dir: libs
@@ -110,6 +110,59 @@ knitr::opts_chunk$set(echo = F, warning = F, error = F, message = F)
 
 ---
 
+class: center
+
+**SPSS Code**
+
+<img src="images/spss_code.png" alt="" width="480" height="150">
+
+--
+
+**SPSS Output**
+
+<img src="images/spss_output.png" alt="" width="600" height="300">
+
+---
+
+```{r}
+euro <- tidytemplate::load_it("data/euro.Rdata")
+
+mod1 <- lm(feel_eu ~ geburtsjahr + class + linksrechts, data = euro)
+```
+
+**R Code**
+
+```{r, eval = F, echo = T}
+mod1 <- lm(feel_eu ~ geburtsjahr + class + linksrechts, data = euro)
+
+texreg::texreg(model1)
+```
+
+--
+
+**R Output**
+
+<img src="images/r_table.png" alt="" width="300" height="400">
+
+---
+
+## Visualisierung
+
+```{r, fig.width=10, fig.height=6, fig.align='center', echo = T}
+sjPlot::plot_model(mod1, show.p = T, show.values = T)
+```
+
+---
+
+
+background-image: url("images/map_example.png")
+background-position: 50% 50%
+background-size: 100%
+class: center, top
+
+## Visualisierung
+
+---
 
 ## Fragen
 
@@ -135,7 +188,7 @@ Mitnahme des eigenen Laptops ist empfohlen
 
 <br>
 
-**Installation von SPSS 24 auf dem Laptop:**
+**Installation von SPSS 25 auf dem Laptop:**
 
 http://www.stud.uni-stuttgart.de/dienste/software/spss.html
 
@@ -154,6 +207,8 @@ class: center, middle
 
 
 ##<a href="mailto:fabio-antonello.votta@sowi.uni-stuttgart.de">fabio-antonello.votta@sowi.uni-stuttgart.de</a>
+
+Mit Betreff: SMII Tutorium - Aufgabe X - [DEIN NAME]
 
 #bis jeweils Montag um 12 Uhr senden!
 
