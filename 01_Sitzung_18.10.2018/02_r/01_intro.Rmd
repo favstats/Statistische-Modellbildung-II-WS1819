@@ -58,7 +58,7 @@ x
 
 **Aufgaben:**
 
-4. Adddiere x und y und speichere das Ergebnis in z. Gebe z aus!
+4. Erstelle ein neues Objekt y mit deiner Lieblingszahl. Adddiere x und y und speichere das Ergebnis in z. Gebe z aus!
 
 ```{r}
 
@@ -146,7 +146,7 @@ Wollen wir auf einen bestimmten Wert in unserem Vektor zugreifen, dann benutzen 
 ```{r}
 vektor     
 vektor[3]  #gibt uns das dritte Element von vektor aus
-vektor[5]  #gibt uns das dritte Element von vektor aus
+vektor[5]  #gibt uns das fünfte Element von vektor aus
 
 vektor[1] / vektor[4] #teile die erste Stelle von vektor durch die fünfte Stelle von vektor
 ```
@@ -166,7 +166,7 @@ quadrieren <- function(input) {
 }
 
 #Funktion ausprobieren!
-quadrieren(2)              
+quadrieren(input = 2)              
 ```
 
 Wir können auch zwei oder mehrere Argumente zu einer Funktion hinzufügen. Probieren wir das gleiche doch mal mit einer Funktion die jeder aus dem Physik - Unterricht kennen sollte:
@@ -183,12 +183,12 @@ $$s  = v * t$$
 
 ```{r}
 distanz <- function(v, t) {
- s <- v * t       #teile v / t und definiere deren Ergebnis als s
+ s <- v * t       #v mal t und definiere deren Ergebnis als s
  s                #gebe s aus
 }
 
 #Funktion ausprobieren!
-distanz(50, 6)
+distanz(v = 50, t = 6)
 ```
 
 Nun müssen wir allerdings nicht immer selber Funktionen definieren. Im Gegenteil! `Base R` und die vielen Packages haben unzählige Funktionen, die Datenbearbeitung einfach machen. Beispielsweise gibt `mean()` den Mittelwert eines Vektors aus und `sd()` gibt die Standardabweichung.
@@ -233,11 +233,33 @@ class(num)
 
 
 ```{r}
+set.seed(2018)
+
+x <- runif(100, 20, 100)
+y <- runif(100, 20, 100)
+
+#install.packages("DescTools)
+library(DescTools)
+
+SpearmanRho(d.diamonds$clarity, d.diamonds$cut, conf.level = 0.95)
+```
+
+
+
+
+```{r}
 as.character(num)
 as.factor(char)
 as.numeric(fac)
 
 
+
+cor.test.plus <- function(x) {
+  list(x, 
+       Standard.Error = unname(sqrt((1 - x$estimate^2)/x$parameter)))
+}
+
+cor.test.plus(cor.test(x, y))
 ```
 
 ### Dataframes
@@ -251,13 +273,18 @@ __Lasst uns mal einen Beispieldatensatz einladen.__
 
 Der European Social Survey ist ein transnationales Survey-Projekt und enthält über 34.000 Befragte und hunderte von Variablen zu politischen und sozio-ökonomischen Fragestellungen.
 
-Hier ein kleiner Ausschnitt aus dem Datensatz, welches nur das Subset *Deutschland* zeigt:
+Zunächst laden wir den Datensatz ein
 
 ```{r}
 load("data/ess_ger.Rdata")
+```
 
+Hier ein kleiner Ausschnitt aus dem Datensatz, welches nur das Subset *Deutschland* zeigt:
+
+```{r, eval = F}
 ess_ger
 ```
+
 
 Möglicherweise habt ihr bemerkt, dass R Buchstabenabk?rzungen unter den Spaltennamen des Datensatzes `ess_ger` anzeigt. Diese Abkürzungen beschreiben den Typ der Variablen, die in jeder Spalte gespeichert sind:
 
@@ -284,7 +311,7 @@ Eine Sache fällt dir vielleicht auch auf: das Kürzel _NA_ steht für _Not Avai
 
 Sehr angenehm kann man auf einzelne Variablen mit Hilfe des Dollarzeichens in der Form `data$variable` zugegriffen werden.
 
-```{r}
+```{r, eval = F}
 ess_ger$gender    #zeige den Vektor gender
 
 head(ess_ger$gender)   #zeige die ersten 5 Stellen von gender
@@ -298,7 +325,7 @@ ess_ger$gender[2000]    #zeige die 2000. Stelle von gender
 
 Wollen wir auf verschiedene Reihen oder Spalten des dataframes zugreifen, können wir das in folgenderweise tun
 
-```{r}
+```{r, eval = F}
 ess_ger[1, ]        #1. Reihe
 ess_ger[, 2]        #1. Spalte
 
@@ -427,13 +454,13 @@ Eine Variable `u40` erstellen welche die 18 bis 40 J?hrigen und die ?ber 40 J?hr
 
 ```{r}
 mutate(ess_ger, u40 = ifelse(age <= 40, "18 - 40" ,"< 40"))
-#darauf achten, dass bei strings (Wörtern) Anführungsstriche gemacht werden müssen!
+#darauf achten, dass bei strings ('Wörtern') Anführungsstriche gemacht werden müssen!
 
 ```
 
 ```{r}
 ess_ger <- mutate(ess_ger, gender_rec = ifelse(gender == 1, "männlich" ,"weiblich"))
-#darauf achten, dass bei strings (Wörtern) Anführungsstriche gemacht werden müssen!
+#darauf achten, dass bei strings ('Wörtern') Anführungsstriche gemacht werden müssen!
 
 ess_ger
 ```
@@ -468,11 +495,11 @@ mutate(ess_ger, fake_refugee_num = case_when(
 ))
 ```
 
-Jede Bedingung untereinander gereiht und mit einem Komma getrrent. Wenn eine Bedingung ein `TRUE` Statement ist, dann wird mit dem `~` Operator der entsprechende Wert zugewiesen. Gibt man `TRUE` selbst an, so kann man "alle anderen" Ausprägungen, die nicht vorher abgefragt worden sind einen Wert zuweisen. Gibt man die Originalvariable an, so bleiben die restlichen Werte wie sie sind.
+Jede Bedingung untereinander gereiht und mit einem Komma getrennt. Wenn eine Bedingung ein `TRUE` Statement ist, dann wird mit dem `~` Operator der entsprechende Wert zugewiesen. Gibt man `TRUE` selbst an, so kann man "alle anderen" Ausprägungen, die nicht vorher abgefragt worden sind einen Wert zuweisen. Gibt man die Originalvariable an, so bleiben die restlichen Werte wie sie sind.
 
 **Aufgabe**
 
-8. Generiere eine neue Variable `party_ger` mit den folgenden Ausprägungen:
+8. Generiere eine neue Variable `party_ger_cat` mit den folgenden Ausprägungen:
 
 - 1 = "CDU/CSU"
 - 2 = "SPD" 
@@ -515,7 +542,7 @@ select(ess_ger , age, fake_refugee)
 
 - `gender_rec` 
 - `left_right`
-- `party_ger`
+- `party_ger_cat`
 
 11. Wähle alle Variablen **außer** `fake_refugee` und `age`.
 
@@ -535,8 +562,8 @@ Mit `filter()` behält man oder selektiert man Zeilen eines Datensatzes, welche 
 
 **Beispiel:**
 
-```{r filt}
-filter(ess_ger, party_ger == "FDP")
+```{r, eval = F}
+filter(ess_ger, party_ger_cat == "FDP")
 
 ```
 
@@ -596,11 +623,11 @@ Den pipe operator kann man sich als "danach" vorstellen.
 
 **Hier ein Beispiel:**
 
-```{r}
+```{r, eval = F}
 ess_ger %>%
   select(age, gender, left_right, party_ger) %>%
   mutate(gender_rec = ifelse(gender == 1, "männlich", "weiblich")) %>%
-  mutate(party_ger = case_when(
+  mutate(party_ger_cat = case_when(
                  party_ger == 1 ~ "CDU/CSU",
                  party_ger == 2 ~ "SPD",
                  party_ger == 3 ~ "Die Linke",
@@ -608,11 +635,11 @@ ess_ger %>%
                  party_ger == 5 ~ "FDP",
                  party_ger == 6 ~ "AfD",
                  party_ger %in% 7:9 ~ "Andere")) %>%
-  filter(party_ger == "AfD") %>%
+  filter(party_ger_cat == "AfD") %>%
   rename(alter = age,
     geschl = gender_rec,
     links_rechts = left_right) %>%
-  select(geschl, alter, links_rechts, party_ger)
+  select(geschl, alter, links_rechts, party_ger_cat)
 
 ```
 
@@ -625,7 +652,7 @@ Benutzt die pipe für folgende Aufgaben:
 - `gender_rec`
 - `age`
 - `left_right`
-- `party_ger`
+- `party_ger_cat`
 - `fake_refugee` 
 
 16. Filtere die Variable und zeige nur Fälle mit der Ausprägung `männlich` 
@@ -656,9 +683,9 @@ Benutzt die pipe für folgende Aufgaben:
 
 Mit `group_by()` werden die nachfolgden Operationen gruppenweise ausgeführt. Mit `summarise()` werden die gruppierten Variablen aggregiert
 
-```{r}
+```{r, eval = F}
 ess_ger %>%
-  group_by(party_ger) %>% # Gruppenvariable
+  group_by(party_ger_cat) %>% # Gruppenvariable
   summarise(mean_age = mean(age, na.rm = T))
 ```
 
@@ -718,13 +745,14 @@ ggplot(ess_ger, aes(x = age, left_right)) +
 ggplot(ess_ger, aes(x = age, left_right)) +
   geom_point() +
   geom_smooth(method = "lm")
+
 ```
 
 
 ### Boxplots
 
-```{r}
-ggplot(ess_ger, aes(x = partei_ident, left_right)) +
+```{r, eval = F}
+ggplot(ess_ger, aes(x = party_ger_cat, left_right)) +
   geom_boxplot()
 ```
 
