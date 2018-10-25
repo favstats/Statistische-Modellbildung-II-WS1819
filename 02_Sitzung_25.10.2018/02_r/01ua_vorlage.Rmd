@@ -9,7 +9,7 @@ output: html_document
 #Default Options - kann bei Bedarf geändert werden
 knitr::opts_chunk$set(echo = T # Whether to display code along with its results
                       , eval = T # Whether to evaluate the code and include its results
-                      , results = "asis" # this at deafult is in end much more efficient
+                      , results = "asis" # this at default is in end much more efficient
                       , cache = F # Whether to cache results for future renders (efficient!)
                       , warning = F # Whether to display errors
                       , message = F # Whether to display messages
@@ -26,7 +26,7 @@ knitr::opts_chunk$set(echo = T # Whether to display code along with its results
 #install.packages("devtools") #muss einmal installiert werden
 #devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
 
-pacman::p_load(tidyverse, haven, texreg)
+pacman::p_load(tidyverse, haven, texreg, sjmisc)
 ```
 
 ## Aufgabe 1
@@ -59,7 +59,13 @@ ANTWORT HIER EINTRAGEN
 
 -	*Alter: Startwert auf 0 setzen; 18=0, 48=30*
 
--	*Schulabschluss- bzw. Schuldbildung: 5 Ausprägungen; 0=kein Schulabschluss, 1=HS, 2=RS, 3=FHR, 4=Abi; Rest=-1 bzw. Missing*
+-	*Schulabschluss- bzw. Schuldbildung: 5 Ausprägungen; 
+    + 0=kein Schulabschluss,
+    + 1=HS, 
+    + 2=RS
+    + 3=FHR
+    + 4=Abi;
+    + Rest=-1 bzw. Missing*
 
 -	*Geschlecht: 0=weiblich; 1=männlich*
 
