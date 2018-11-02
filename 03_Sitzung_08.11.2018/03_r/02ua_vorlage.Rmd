@@ -1,0 +1,121 @@
+---
+title: "SM II Abgabe 2"
+author: "Fabio Votta"
+date: "9.November 2018"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+
+pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr, tidytemplate, lm.beta, stargazer)
+```
+
+## Aufgabe 1
+
+
+_Wozu werden Standardisierungen durchgeführt und wie wird dabei vorgegangen? Erläutern Sie zudem exemplarisch wozu $b^*$ benutzt wird und wie man diesen interpretiert!_
+
+$$b^* = b * \frac{s_x}{s_y}$$
+
+
+## Aufgabe 2
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("allbus2014.sav")
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+           bildung = V86, 
+           geschl  = V81,  
+        einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+        bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+         geschl_rec = ifelse(geschl == 2, 0, 1))
+
+```
+
+
+*Führen Sie eine z-Standardisierung für die Originalaltersvariable (alter_z) und die auf Null gesetzte Altersvariable (alter_0z) sowie für "unsere" Bildungsvariable (0 bis 4). [Daten: ALLBUS 2014]*
+
+
+```{r}
+allb_sub_z <- allb_sub %>%
+select(einkommen, alter, alter0,
+geschl_rec, bildung_rec) %>%
+mutate(alter_z = scale(alter),
+alter0_z = scale(alter0),
+bildung_z = scale(bildung_rec),
+einkommen_z = scale(einkommen))
+
+
+allb_sub_z %>%
+select(alter_z, alter0_z) %>%
+descr() %>%
+#select(-vars, -trimmed, -mad, -se) %>%
+kable()
+
+
+
+
+```
+
+
+### Aufgabe 2a
+
+*Vergleichen Sie die Zahlenwerte, Mean und die Standardabweichung von alter$_z$ und alter_0z und erklären Sie Ihre "Beobachtung".*
+
+
+```{r}
+
+
+
+
+```
+
+### Aufgabe 2b
+
+*Führen Sie eine Regression von Einkommen auf Alter_0 und Bildung (Modell 1) und eine Regression von Einkommen auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
+
+```{r, results='asis'}
+mod1 <- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub_z)
+mod2 <- lm(einkommen_z ~ alter0_z + bildung_z, data = allb_sub_z)
+
+texreg(list(mod1,
+               mod2))
+
+
+#ODER
+
+mod1 <- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub_z)
+tbl_std(mod1)
+
+
+
+```
+
+
+
+### Aufgabe 2c
+
+_Wie erklären Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Modell 2 das z-transformierte Einkommen als abhängige Variable._
+
+
+## Aufgabe 3 
+
+*Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R?-Wert so gro? wie nur irgendwie m?glich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwünscht).*
+
+*- Einzige Einschränkung: Keine Regression von Y auf Y.*
+
+```{r}
+
+
+
+```
+
+
+
+
+
