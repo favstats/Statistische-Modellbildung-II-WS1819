@@ -9,6 +9,8 @@ output: pdf_document
 #install.packages("pacman") #muss einmal installiert werden
 #install.packages("devtools") #muss einmal installiert werden
 #devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
 
 pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr, tidytemplate, lm.beta, stargazer)
 ```
@@ -24,7 +26,7 @@ $$b^* = b * \frac{s_x}{s_y}$$
 ## Aufgabe 2
 
 ```{r datensatz einladen, include=FALSE}
-allbus <- read_spss("allbus2014.sav")
+allbus <- read_spss("data/allbus2014.sav")
 allb_sub <- allbus %>% 
       select(V84, V86, V81, V420)  %>% 
       rename(alter = V84, 
@@ -42,21 +44,6 @@ allb_sub <- allbus %>%
 
 
 ```{r}
-allb_sub_z <- allb_sub %>%
-select(einkommen, alter, alter0,
-geschl_rec, bildung_rec) %>%
-mutate(alter_z = scale(alter),
-alter0_z = scale(alter0),
-bildung_z = scale(bildung_rec),
-einkommen_z = scale(einkommen))
-
-
-allb_sub_z %>%
-select(alter_z, alter0_z) %>%
-descr() %>%
-#select(-vars, -trimmed, -mad, -se) %>%
-kable()
-
 
 
 
@@ -77,20 +64,11 @@ kable()
 
 ### Aufgabe 2b
 
-*Führen Sie eine Regression von Einkommen auf Alter_0 und Bildung (Modell 1) und eine Regression von Einkommen auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
+*Führen Sie eine Regression von Einkommen auf alter_0 und bildung (Modell 1) und eine Regression von einkommen_z auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
 
 ```{r, results='asis'}
-mod1 <- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub_z)
-mod2 <- lm(einkommen_z ~ alter0_z + bildung_z, data = allb_sub_z)
-
-texreg(list(mod1,
-               mod2))
 
 
-#ODER
-
-mod1 <- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub_z)
-tbl_std(mod1)
 
 
 
@@ -105,11 +83,12 @@ _Wie erklären Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Mo
 
 ## Aufgabe 3 
 
-*Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R?-Wert so gro? wie nur irgendwie m?glich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwünscht).*
+*Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R2-Wert so groß wie nur irgendwie möglich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwünscht).*
 
 *- Einzige Einschränkung: Keine Regression von Y auf Y.*
 
-```{r}
+```{r, results='asis'}
+
 
 
 
