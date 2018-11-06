@@ -1,7 +1,7 @@
 ---
 title: "SM II Abgabe 2"
 author: "Fabio Votta"
-date: "9.November 2018"
+date: "8.November 2018"
 output: pdf_document
 ---
 
@@ -12,7 +12,7 @@ output: pdf_document
 #devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
 
 
-pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr, tidytemplate, lm.beta, stargazer)
+pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr)
 ```
 
 ## Aufgabe 1
@@ -21,6 +21,8 @@ pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr, tidytemplate, lm.
 _Wozu werden Standardisierungen durchgeführt und wie wird dabei vorgegangen? Erläutern Sie zudem exemplarisch wozu $b^*$ benutzt wird und wie man diesen interpretiert!_
 
 $$b^* = b * \frac{s_x}{s_y}$$
+
+
 
 
 ## Aufgabe 2
@@ -66,7 +68,7 @@ allb_sub <- allbus %>%
 
 *Führen Sie eine Regression von Einkommen auf alter_0 und bildung (Modell 1) und eine Regression von einkommen_z auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
 
-```{r, results='asis'}
+```{r}
 
 
 
@@ -87,7 +89,9 @@ _Wie erklären Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Mo
 
 *- Einzige Einschränkung: Keine Regression von Y auf Y.*
 
-```{r, results='asis'}
+Tipp: Mit `binoculaR` könnt ihr den Datensatz nach relevanten Variablen durchsuchen :)
+
+```{r}
 
 
 
