@@ -1,0 +1,137 @@
+---
+title: "Übungsaufgabe 3"
+author: "Fabio Votta"
+date: "15.November 2018"
+output: pdf_document
+---
+
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom)
+```
+
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("data/allbus2014.sav")
+allb_sub <- allbus %>% 
+     # select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) %>%
+      mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+```
+
+
+## Aufgabe 1
+
+*Erstellen Sie ein Streudiagramm zwischen den Residuen der Regression von "prestige_befragter" auf "bildung_befragter" und der Variablen "bildung_befragter". Beschreiben Sie das Diagramm, sprich wie die fünf "Streusäulen" in Relation zueinander aussehen. Äußern Sie eine Vermutung ob dies bereits eine Verletzung der A1 ist und begründen Sie diese kurz*
+
+Eine der Prestigeskalen auswählen:
+
+- Magnitude-Prestigeskala (MPS)
+- Index für den Prestige-Rang von Berufen (SIOPS)
+- Internationaler sozio-ökonomischer Index (ISEI)
+
+
+```{r}
+
+
+
+
+```
+
+
+
+## Aufgabe 2
+
+
+*Erstellen Sie eine Regression von Einkommen auf Alter (Alter_0) und speichern Sie dabei die unstandardisierten sowie die standardisierte Residuen aus. Erstellen Sie anschließend ein Streudiagramm für die beiden unterschiedlichen Residuenarten. Die UV soll hierbei das Alter der Befragten sein.*
+
+
+```{r}
+
+
+
+
+
+
+```
+
+
+### Aufgabe 2a
+
+*Was ist der Unterschied zwischen den beiden Residuenarten und wie werden die standardisierten Residuen gebildet?*
+
+
+### Aufgabe 2b
+
+*Beschreiben Sie die beiden Streudiagramme. Gibt es Unterschiede, falls nein, hängt dies mit der Art der Erstellung der Variablen zusammen? Beziehen Sie sich bei Ihrer Antwort auf die statistische Kenngrößen.*
+
+```{r}
+
+
+
+
+
+
+```
+
+
+
+## Aufgabe 3 
+
+_Anhand der Scatterplots (Streudiagramme) lässt sich vermuten, dass zwischen verschiedenen Altersgruppen Varianzinhomogenität (Verletzung A1) besteht._
+
+### Aufgabe 3a
+
+*Erläutern Sie das Prinzip nach welchem der Test funktioniert, der angewendet werden muss, um zu prüfen, ob die identifizierten Gruppen Varianzhomogenität aufweisen.*
+
+
+### Aufgabe 3b
+
+*Testen Sie die Annahme A3 und A5 (Test der Gesamtheit der Residuen) für die Residuen von Aufgabe 3. Sind die Annahmen erfüllt? Welche Einschränkungen müssen bzgl. des Tests für A5 beachtet werden?*
+
+Test von Annahme 3
+
+Zuerst eine absolute Residuenvariable erstellen:
+
+```{r}
+
+
+
+
+
+
+
+
+
+
+```
+
+Test von Annahme 5
+
+
+```{r}
+
+
+
+
+
+
+
+```
+
+
+
