@@ -1,0 +1,124 @@
+---
+title: "Übungsaufgabe 4"
+author: "Fabio Votta"
+date: "22.November 2018"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom, tidytemplate)
+```
+
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("../../data/allbus2014.sav")
+allb_sub <- allbus %>% 
+     # select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) 
+```
+
+
+## Aufgabe 1
+
+*Erstellen Sie eine Regression von Einkommen auf Bildung, Geschlecht und Alter sowie der Dummyvariablen Zugang zu tertiärer Bildung (bild_tert), die null kodiert ist, wenn der betreffende Befragte einen niedrigeren Schulabschluss als Fachhochschulreife hat und eins, wenn Umgekehrtes der Fall ist. Hinzu kommen die Interaktionsvariablen zwischen Geschlecht und Alter (gesch_alter) sowie zwischen Alter und Zugang zu tertiärer Bildung (alt_tert).*
+
+- `0`   OHNE ABSCHLUSS
+- `1`   VOLKS-,HAUPTSCHULE
+- `2`   MITTLERE REIFE
+- `3`   FACHHOCHSCHULREIFE
+- `4`   HOCHSCHULREIFE
+- `NA`  ANDERER ABSCHLUSS
+- `NA`  NOCH SCHUELER
+- `NA`	KEINE ANGABE
+
+
+```{r}
+
+
+
+
+```
+
+
+
+### Aufgabe 1a
+
+
+*Berechnen Sie das Konfidenzintervall für die Variablen bild_tert und Alter mittels der Koeffizienten und interpretieren Sie diese.*
+
+$$KI_{95} = b \pm  t_{df} \times SE_b$$ 
+
+Für $df > 120$ und $95\%$ Signifikanzniveau ist der kritische Wert $t = 1.96$ 
+
+Für $df > 120$ und $99\%$ Signifikanzniveau ist der kritische Wert $t = 2.58$ 
+
+```{r}
+
+
+```
+
+
+
+### Aufgabe 1b
+
+*Testen Sie das Gesamtmodell auf Linearität.*
+
+```{r}
+
+
+```
+
+
+
+## Aufgabe 2
+
+*Was ist unter Multikollinearität zu verstehen, warum ist es ein Problem, wenn diese in einer Modellschätzung vorliegt und wie kann das Vorliegen derselben diagnostiziert werden?*
+
+
+
+## Aufgabe 3 
+
+_Wie ausgeprägt ist die Multikollinearität im Regressionsmodell von Aufgabe 1? Welche Gründe (inhaltliche) lassen sich für die Multikollinearität identifizieren?_
+
+
+```{r}
+
+```
+
+## Aufgabe 4
+
+Bestimmen Sie den minimalen Stichprobenumfang für eine Variablenbeziehung in der Höhe von ca. f2=0.1. Die Variablenbeziehung soll in einem Regressionsmodell mit 20 weiteren Kontrollvariablen mit einer Power von 0.8 und einem Signifikanzniveau von 95% (bzw. Irrtumswahrscheinlichkeit 0.05) getestet werden. Stellen Sie Ihren Denk- /Rechenvorgang dar._
+
+
+Tipp: siehe Urban/Mayerl 2011: 159f.
+
+$$N = \frac{\lambda}{f^2}$$
+
+```{r}
+
+```
+
+
+## Aufgabe 5
+
+_Welche Form von Fehlschluss wird durch ein niedriges Signifikanzniveau "begünstigt"?_ 
+
+
+
+## Aufgabe 6
+
+_In welchen Fällen ist es sinnvoll das Signifikanzniveau höher anzusetzen als 95%?_
