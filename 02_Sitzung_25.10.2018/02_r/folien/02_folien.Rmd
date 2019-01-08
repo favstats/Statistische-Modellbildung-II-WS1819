@@ -16,7 +16,7 @@ output:
 ---
 
 ```{r, include = F}
-pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot)
+pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot, sjmisc)
 ```
 
 
@@ -27,6 +27,10 @@ pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot)
 2. Übungsaufgabe - R
   + Projekte & Datenpfade
   + Hilfreiche Funktionen
+  
+[Link zum Datensatz](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/data/allbus2014.sav)
+  
+  
 
 ---
 
@@ -43,6 +47,8 @@ class: center, middle
 ## Übungsaufgabe SPSS
 
 [In SPSS]
+
+[Link zur SPSS Vorlage](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/02_Sitzung_25.10.2018/02_spss/01ua_spss.sps)
 
 ---
 
@@ -179,7 +185,7 @@ getwd()
 ```{r}
 allbus <- read_sav("../data/allbus2014.sav")
 
-allbus %>% select(V1:V15) %>% head() %>% kable(., "html")
+allbus %>% select(V1:V15) %>% head() %>% kable("html")
 ```
 
 ---
@@ -268,6 +274,35 @@ mutate(data, var1_new2 = var1_new + 5,
 3. Argument: was soll passieren wenn `FALSE`
 
 Falls ihr nochmal Anwendungsbeispiele braucht, schaut doch in das `01_intro.Rmd` aus der ersten Sitzung :)
+
+
+---
+
+## Alles gemeinsam mit der Pipe `%>%`
+
+
+```{r, eval = F}
+data %>% 
+  select(var1, var2, var3) %>% 
+  rename(data, var1_new = var1, 
+             var2_new = var2, 
+             var3_new = var3) %>% 
+  mutate(data, var1_new2 = var1_new + 5, 
+             var2_new2 = ifelse(var2_new == 1, NA, var2_new), 
+             var3_new2 = ifelse(var3_new == 1 | var3_new == 2, 1, var3_new))
+```
+
+
+
+---
+
+#### Hilfreiche Funktionen für Übungsaufgabe
+
+> Variablen inspizieren
+
+```{r}
+frq(allbus, V58)
+```
 
 ---
 
@@ -452,10 +487,17 @@ htmlreg(list(model1, model2, model3), single.row = T)
 
 > Lineare Regression III
 
-
 ```{r, fig.width=6}
 plot_model(model3, show.p = T, show.values = T)
 ```
+
+---
+
+> Lineare Regression IV
+
+Mehr Anwendungsfälle für [plot_model](https://cronbach.github.io/plot_model/)
+
+![](images/more_plot.png)
 
 ---
 
@@ -464,6 +506,9 @@ class: center, middle
 ### Jetzt können wir loslegen :)
 
 ![](https://media1.tenor.com/images/7dcc0b5a2c64d741b6edd12a88738cf9/tenor.gif)
+
+
+[Link zur R Vorlage](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/02_Sitzung_25.10.2018/02_r/01ua_vorlage.Rmd)
 
 
 

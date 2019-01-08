@@ -1,0 +1,114 @@
+---
+title: "Übungsaufgabe 2"
+author: "Fabio Votta"
+date: "9.November 2017"
+output: pdf_document
+---
+
+```{r chunks, include=FALSE}
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(echo = T # Whether to display code along with its results
+                      , eval = T # Whether to evaluate the code and include its results
+                      , results = "asis" # this at deafult is in end much more efficient
+                      , cache = F # Whether to cache results for future renders (efficient!)
+                      , warning = F # Whether to display errors
+                      , message = F # Whether to display messages
+                      , error = F # maybe turn on
+                      , tidy = F # Whether to reformat code in a tidy way when displaying it
+                      , fig.width = 6 #plot width at 6
+                      , fig.height = 4 #plot height at 4
+                      , fig.align = "center" #plot alignment center
+                      )
+
+options(xtable.comment = FALSE)
+```
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("devtools")
+#devtools::install_github("Espanta/lubripack")
+devtools::install_github("favstats/favstats", force = T)
+
+lubripack::lubripack("tidyverse","knitr","haven","sjmisc","texreg", "car", "psych", "lm.beta", "favstats", dependencies = T, force = T)
+```
+
+## Aufgabe 1
+
+
+_Wozu werden Standardisierungen durchgeführt und wie wird dabei vorgegangen? Erläutern Sie zudem exemplarisch wozu $b^*$ benutzt wird und wie man diesen interpretiert!_
+
+$$b^* = b * \frac{s_x}{s_y}$$
+
+
+## Aufgabe 2
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("allbus2014.sav")
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+           bildung = V86, 
+           geschl  = V81,  
+        einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+        bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+         geschl_rec = ifelse(geschl == 2, 0, 1))
+
+```
+
+
+*Führen Sie eine z-Standardisierung für die Originalaltersvariable (alter_z) und die auf Null gesetzte Altersvariable (alter_0z) sowie für "unsere" Bildungsvariable (0 bis 4). [Daten: ALLBUS 2014]*
+
+
+```{r}
+
+
+
+
+```
+
+
+### Aufgabe 2a
+
+*Vergleichen Sie die Zahlenwerte, Mean und die Standardabweichung von alter$_z$ und alter_0z und erklären Sie Ihre "Beobachtung".*
+
+
+```{r}
+
+
+
+
+```
+
+### Aufgabe 2b
+
+*Führen Sie eine Regression von Einkommen auf Alter_0 und Bildung (Modell 1) und eine Regression von Einkommen auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
+
+```{r}
+
+
+
+```
+
+
+
+### Aufgabe 2c
+
+_Wie erklären Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Modell 2 das z-transformierte Einkommen als abhängige Variable._
+
+
+## Aufgabe 3 
+
+*Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R²-Wert so groß wie nur irgendwie möglich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwünscht). Fügen Sie die entsprechenden Teile des SPSS-Outputs in Ihre Abgabe ein.*
+
+*- Einzige Einschränkung: Keine Regression von Y auf Y.*
+
+```{r}
+
+
+
+```
+
+
+
+
+

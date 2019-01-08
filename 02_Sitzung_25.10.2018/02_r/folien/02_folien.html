@@ -27,6 +27,10 @@ class: center, middle, inverse, title-slide
 2. Übungsaufgabe - R
   + Projekte &amp; Datenpfade
   + Hilfreiche Funktionen
+  
+[Link zum Datensatz](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/data/allbus2014.sav)
+  
+  
 
 ---
 
@@ -43,6 +47,8 @@ class: center, middle
 ## Übungsaufgabe SPSS
 
 [In SPSS]
+
+[Link zur SPSS Vorlage](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/02_Sitzung_25.10.2018/02_spss/01ua_spss.sps)
 
 ---
 
@@ -183,7 +189,7 @@ getwd()
 ```r
 allbus &lt;- read_sav("../data/allbus2014.sav")
 
-allbus %&gt;% select(V1:V15) %&gt;% head() %&gt;% kable(., "html")
+allbus %&gt;% select(V1:V15) %&gt;% head() %&gt;% kable("html")
 ```
 
 &lt;table&gt;
@@ -406,6 +412,52 @@ mutate(data, var1_new2 = var1_new + 5,
 
 Falls ihr nochmal Anwendungsbeispiele braucht, schaut doch in das `01_intro.Rmd` aus der ersten Sitzung :)
 
+
+---
+
+## Alles gemeinsam mit der Pipe `%&gt;%`
+
+
+
+```r
+data %&gt;% 
+  select(var1, var2, var3) %&gt;% 
+  rename(data, var1_new = var1, 
+             var2_new = var2, 
+             var3_new = var3) %&gt;% 
+  mutate(data, var1_new2 = var1_new + 5, 
+             var2_new2 = ifelse(var2_new == 1, NA, var2_new), 
+             var3_new2 = ifelse(var3_new == 1 | var3_new == 2, 1, var3_new))
+```
+
+
+
+---
+
+#### Hilfreiche Funktionen für Übungsaufgabe
+
+&gt; Variablen inspizieren
+
+
+```r
+frq(allbus, V58)
+```
+
+```
+## 
+## # MUSIK: VOLKSMUSIK HOEREN (V58) &lt;numeric&gt; 
+## # total N=3471  valid N=3464  mean=3.34  sd=1.30
+##  
+##  val        label frq raw.prc valid.prc cum.prc
+##    1    SEHR GERN 323    9.31      9.32    9.32
+##    2         GERN 725   20.89     20.93   30.25
+##    3   WEDER NOCH 710   20.46     20.50   50.75
+##    4       UNGERN 863   24.86     24.91   75.66
+##    5  SEHR UNGERN 843   24.29     24.34  100.00
+##    9 KEINE ANGABE   0    0.00      0.00  100.00
+##   NA           NA   7    0.20        NA      NA
+```
+
 ---
 
 &gt; Lineare Regression
@@ -584,12 +636,19 @@ htmlreg(list(model1, model2, model3), single.row = T)
 &gt; Lineare Regression III
 
 
-
 ```r
 plot_model(model3, show.p = T, show.values = T)
 ```
 
-![](02_folien_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+![](02_folien_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+
+---
+
+&gt; Lineare Regression IV
+
+Mehr Anwendungsfälle für [plot_model](https://cronbach.github.io/plot_model/)
+
+![](images/more_plot.png)
 
 ---
 
@@ -598,6 +657,9 @@ class: center, middle
 ### Jetzt können wir loslegen :)
 
 ![](https://media1.tenor.com/images/7dcc0b5a2c64d741b6edd12a88738cf9/tenor.gif)
+
+
+[Link zur R Vorlage](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/02_Sitzung_25.10.2018/02_r/01ua_vorlage.Rmd)
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({

@@ -1,0 +1,158 @@
+---
+title: "Übungsaufgabe 9"
+author: "Fabio Votta"
+date: "10.Januar 2017"
+output: html_document
+---
+
+```{r chunks, include=FALSE}
+# Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(
+  echo = T # Whether to display code along with its results
+  , eval = T # Whether to evaluate the code and include its results
+  , results = "asis" # this at deafult is in end much more efficient
+  , cache = F # Whether to cache results for future renders (efficient!)
+  , warning = F # Whether to display errors
+  , message = F # Whether to display messages
+  , error = F # maybe turn on
+  , tidy = F # Whether to reformat code in a tidy way when displaying it
+  , fig.width = 6 # plot width at 6
+  , fig.height = 4 # plot height at 4
+  , fig.align = "center" # plot alignment center
+)
+
+options(xtable.comment = FALSE, scipen = 9999)
+```
+
+```{r packages and functions, include=FALSE, echo=F}
+#############
+# NEU NEU NEU#
+#############
+
+# install.packages("pacman")
+# pacman::p_install_gh("favstats/favstats")
+
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom, magrittr, BaylorEdPsych, lmtest)
+
+# Hilfsfunktionen einladen
+#source("functions.R")
+```
+
+```{r datensatz einladen, include=FALSE, eval = T}
+allbus <- read_spss("allbus2014.sav")
+allbus %<>% 
+#      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) #%>% 
+ # mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+```
+
+## Aufgabe 1
+
+*Erstellen Sie zunächst dichotome Variablen für SPD-Wahl bei der letzten Bundestagswahl (aus V810), die Gewerkschaftsmitgliedschaft (z. B. V606) und die ev. Konfessionszugehörigkeit (V601).*
+
+**`V810` ZWEITSTIMME, LETZTE BUNDESTAGSWAHL**
+
+- 1  CDU-CSU
+- 2  SPD
+- 3  FDP
+- 4  DIE GRUENEN
+- 6  DIE LINKE
+- 20 NPD
+- 41 PIRATEN
+- 42 AFD
+- 43 FREIE WAEHLER
+- 90 ANDERE PARTEI
+
+**`V606` MITGLIED IN EINER GEWERKSCHAFT?**
+
+- 1 Ja
+- 2 Nein
+
+**`V601` KONFESSION, BEFRAGTE**
+
+- 1 EVANG.OHNE FREIKIRCH
+- 2 EVANG.FREIKIRCHE
+- 3 ROEMISCH-KATHOLISCH
+- 4 AND.CHRISTL.RELIGION
+- 5 AND.NICHT-CHRISTLICH
+- 6 KEINER RELIGIONSGEM.
+
+```{r}
+
+
+```
+
+
+### Aufgabe 1a
+
+*Berechnen Sie eine log. Regression (Modell 1) AV: SPD-Wahl und UV: die Gewerkschaftsmitgliedschaft und die ev. Konfessionszugehörigkeit.* 
+
+```{r}
+
+
+
+```
+
+
+
+### Aufgabe 1b
+
+*Berechnen Sie ein weiteres (nested) log. Regression mit zwei weiteren (frei wählbaren) unabhängigen Variablen (Modell 2)* 
+
+```{r}
+
+```
+
+
+
+### Aufgabe 1c
+
+*Erläutern Sie das Prinzip von McFaddens-R2 und des Nagelkerke-$R^2$* 
+
+
+
+### Aufgabe 1d
+
+*Interpretieren Sie diese für beide Modelle.*
+
+```{r}
+
+
+```
+
+
+## Aufgabe 2
+
+*Welches der beiden Modelle weist die bessere Passung an die empirischen Daten auf? Erläutern Sie, wie Sie zur Feststellung dieses Sachverhaltes vorgehen müssen und beziehen Sie sich dabei auf das Prinzip der Devianz (vgl. die Berechnung von Pseudo-$R^2$). Berechnen Sie einen Likelihood Ratio-$\chi^2$-Test mit Modell 2 und Modell 1.*
+
+```{r, results='markup'}
+
+```
+
+
+
+## Aufgabe 3
+
+*Regressionsdiagnostik zu Modell 2*
+
+### Aufgabe 3a
+
+*Was können Sie über die Verteilung der Fälle aussagen? Erläutern Sie das Vorgehen und Ihr Ergebnis.*
+
+
+
+### Aufgabe 3b
+
+*Können Sie Verzerrungen mit Blick auf die Y-Werteverteilung, die Vollständigkeit der Information und die (vollständige) Separation identifizieren?*
+
+
+```{r}
+
+```
+

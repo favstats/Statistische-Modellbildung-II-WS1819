@@ -1,0 +1,220 @@
+---
+title: "Übungsaufgabe 9"
+author: "Fabio Votta"
+date: "10.Januar 2017"
+output: html_document
+---
+
+```{r chunks, include=FALSE}
+# Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(
+  echo = T # Whether to display code along with its results
+  , eval = T # Whether to evaluate the code and include its results
+  , results = "asis" # this at deafult is in end much more efficient
+  , cache = F # Whether to cache results for future renders (efficient!)
+  , warning = F # Whether to display errors
+  , message = F # Whether to display messages
+  , error = F # maybe turn on
+  , tidy = F # Whether to reformat code in a tidy way when displaying it
+  , fig.width = 6 # plot width at 6
+  , fig.height = 4 # plot height at 4
+  , fig.align = "center" # plot alignment center
+)
+
+options(xtable.comment = FALSE, scipen = 9999)
+```
+
+```{r packages and functions, include=FALSE, echo=F}
+#############
+# NEU NEU NEU#
+#############
+
+# install.packages("pacman")
+# pacman::p_install_gh("favstats/favstats")
+
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom, magrittr, BaylorEdPsych, lmtest)
+
+# Hilfsfunktionen einladen
+#source("functions.R")
+```
+
+```{r datensatz einladen, include=FALSE, eval = T}
+allbus <- read_spss("allbus2014.sav")
+allbus %<>% 
+#      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) #%>% 
+ # mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+```
+
+## Aufgabe 1
+
+*Erstellen Sie zunächst dichotome Variablen für SPD-Wahl bei der letzten Bundestagswahl (aus V810), die Gewerkschaftsmitgliedschaft (z. B. V606) und die ev. Konfessionszugehörigkeit (V601).*
+
+**`V810` ZWEITSTIMME, LETZTE BUNDESTAGSWAHL**
+
+- 1  CDU-CSU
+- 2  SPD
+- 3  FDP
+- 4  DIE GRUENEN
+- 6  DIE LINKE
+- 20 NPD
+- 41 PIRATEN
+- 42 AFD
+- 43 FREIE WAEHLER
+- 90 ANDERE PARTEI
+
+**`V606` MITGLIED IN EINER GEWERKSCHAFT?**
+
+- 1 Ja
+- 2 Nein
+
+**`V601` KONFESSION, BEFRAGTE**
+
+- 1 EVANG.OHNE FREIKIRCH
+- 2 EVANG.FREIKIRCHE
+- 3 ROEMISCH-KATHOLISCH
+- 4 AND.CHRISTL.RELIGION
+- 5 AND.NICHT-CHRISTLICH
+- 6 KEINER RELIGIONSGEM.
+
+```{r}
+allbus %<>%
+  mutate(spd = ifelse(V810 == 2, 1, 0)) %>%
+  mutate(gewerkschaft = ifelse(V606 == 1, 1, 0)) %>%
+  mutate(evangelisch = ifelse(V601 == 1 | V601 == 2, 1, 0)) %>% 
+  select(bildung_rec, geschl_rec, 
+         gewerkschaft, evangelisch, spd) %>% 
+  na.omit()
+
+```
+
+
+### Aufgabe 1a
+
+*Berechnen Sie eine log. Regression (Modell 1) AV: SPD-Wahl und UV: die Gewerkschaftsmitgliedschaft und die ev. Konfessionszugehörigkeit.* 
+
+```{r}
+mod1 <- glm(spd ~ gewerkschaft + evangelisch, 
+            data = allbus, family = "binomial")
+
+htmlreg(mod1)
+```
+
+
+
+### Aufgabe 1b
+
+*Berechnen Sie ein weiteres (nested) log. Regression mit zwei weiteren (frei wählbaren) unabhängigen Variablen (Modell 2)* 
+
+```{r}
+mod2 <- glm(spd ~ gewerkschaft + evangelisch + geschl_rec + bildung_rec, 
+            data = allbus, family = "binomial")
+
+htmlreg(mod2)
+```
+
+
+
+### Aufgabe 1c
+
+*Erläutern Sie das Prinzip von McFaddens-R2 und des Nagelkerke-$R^2$* 
+
+Zur Berechnung von MacFaddens R-Quadrat wird die Loglikelihood des vollständigen Modells mit der des Nullmodells ins Verhältnis gesetzt. Zusätzlich wird dieser Wert von 1 subtrahiert. Wenn Unterschiede beider Modelle gering sind, ergibt sich im Bruch ein Wert nahe der 1 und das R-Quadrat ergibt annähernd Null. MacFaddes R-Quadrat kann aufgrund seiner Konstruktion nie 1 werden.
+
+Nagelkerkes R-Quadrat ergibt sich aus einer Transformation von Cox&Snells-R-Quadrat. Hier wird die Likelihood des vollständigen Modells mit der des Nullmodells ins Verhältnis gesetzt. Außerdem gibt es einen Korrekturfaktor hinsichtlich der Stichprobengröße. Der Wert des Bruchs wird ebenfalls von 1 abgezogen. Für die Bestimmung von Nagelkerkes R-Quadrat wird nun das R-Quadrat von Cox&Snell durch den maximalen Wert von R-Quadrat geteilt. Dies ergibt ein Gütemaß, welches 1 ergeben kann und deshalb den anderen GM vorzuziehen ist.
+
+### Aufgabe 1d
+
+*Interpretieren Sie diese für beide Modelle.*
+
+```{r}
+data.frame(mod1 = PseudoR2(mod1), mod2 = PseudoR2(mod2)) %>%  
+  kable()
+
+```
+
+McFaddens R2 ist für Modell 1 0.012 und für Modell 2 0.018, hat sich also leicht verbessert. Nagelkerkes R2 ist wie zu erwarten geringfügig höher mit 0,021 bzw. 0,029 für Modell 1 bzw. 2. Insgesamt sind die Werte jedoch weit von denen entfernt, die eine gute Passung indizieren würden (0,2 bis 0,4).
+
+## Aufgabe 2
+
+*Welches der beiden Modelle weist die bessere Passung an die empirischen Daten auf? Erläutern Sie, wie Sie zur Feststellung dieses Sachverhaltes vorgehen müssen und beziehen Sie sich dabei auf das Prinzip der Devianz (vgl. die Berechnung von Pseudo-$R^2$). Berechnen Sie einen Likelihood Ratio-$\chi^2$-Test mit Modell 2 und Modell 1.*
+
+Zur Feststellung, welches Modell besser auf die Daten passt wird der -2-Log-Likelihood-Wert des Modells mit höhere Variablenzahl von dem des einfacheren Modells (geringere Zahl) subtrahiert.Ist die Differenz größer als der kritische Wert passt das komplexere Modell besser auf die Daten. Der Likelihood-Ratio-Test zeigt eine signifikante Verbesserung der Passung von Modell 1 zu Modell 2.
+
+```{r, results='markup'}
+lrtest(mod2, mod1)
+```
+
+
+
+## Aufgabe 3
+
+*Regressionsdiagnostik zu Modell 2*
+
+### Aufgabe 3a
+
+*Was können Sie über die Verteilung der Fälle aussagen? Erläutern Sie das Vorgehen und Ihr Ergebnis.*
+
+Theorie und Vorgehen
+
+Fallzahl: Die Teststärke steigt mit steigendem N. Dadurch werden schwächere Effekte signifikant, der Samplingfehler verringert sich (b-Werte näher an ß). Umgekehrt steigt die Möglichkeit auf Nullzellen, was zu Speration führen kann, mit sinkenden Fallzahlen. Für die Diagnose schaut man sich die erwarteten Zellverteilungen für alle im Modell berücksichtigten kategorialen X-Variablen an. Die erwarteten Zellhäufigkeiten sollten über 1,0 liegen und nur 20% der Fälle sollten unter einem Wert von 5,0 liegen. Ist dies nicht der Fall, muss über die (inhaltlich sinnvolle) Zusammenlegung verschiedener Kategorien nachgedacht werden.
+
+Unvollständige Informationen: Hierbei sind die absoluten Verteilungen auf die verschiedenen Merkmalskombinationen relevant. Wir betrachten dementsprechend die absoluten Fallzahlen. Ein mögliches Problem kann auch hier durch Zusammenlegen von Kategorien beseitigt werden. Wenn eine oder mehrere Nullzellen bzw. schwach besetzte Zellen vorkommen, kann es sein, dass die Modellschätzungen nicht konvergieren. In diesen Fällen kann keine maximale Likelihood identifiziert und die Parameter nicht vertrauenswürdig bestimmt werden. Als Folge sind die Schätzergebnisse mitunter stark verzerrt, was zu einer Überschätzung der Standardfehler führen kann und den ß-Fehler ansteigen lässt. Das Problem besteht besonders bei Dummy-variablen, aufgrund des wechselseitigen Ausschlusses der Kategorien. Deshalb nicht zu viele kategoriale Variablen in Dummies überführen! Die Probleme kommt aber nicht zwangsläufig bei der verwendung von Dummy-Variablen auf.
+
+Y-Werte: Das zentrale Ziel bei der log. Regressionsschätzung ist die Zuordnung der Probanden zu den Merkmalen Y=1 und Y=0. Probleme gibt es je schiefer die Verteilung des Merkmals ist, weil es dann schwierig ist Prädiktoren zu finden, die eien bessere Erklärung als das Nullmodell leisten. Deshalb Daumenregel, dass mindestens 10% in einer Gruppe sein müssen. Getestet wird dies mittels Häufigkeitsauszählung zur AV. Sind weniger als 10% in einer Gruppe wird ggf. ein anderes Verfahren nötig.
+
+Prinzip der Seperation: Eine Separation liegt dann vor, wenn die Zugehörigkeit zur Gruppe Y=1 oder Y=0 durch ein unabhängiges Merkmal X=1 oder X=0 determiniert wird. Daraus folgt, dass die Modellschätzung nicht vertrauenswürdig ist. Mittels Inspektion von Kreuztabellen zwischen der AV und den UV lässt sich das Problem identifizieren, welche bereits durch geringe Fallkombinationen als “nearly separation” indiziert ist. Kommt besonders durch kleine Fallzahlen zustande.
+
+### Aufgabe 3b
+
+*Können Sie Verzerrungen mit Blick auf die Y-Werteverteilung, die Vollständigkeit der Information und die (vollständige) Separation identifizieren?*
+
+Bezüglich der Y-Werteverteilung besteht kein Problem, in jeder Gruppe sind mehr als 10% der Fälle vertreten. Eine unvollständigkeit der Informationen liegt bezüglich der SPD-Wähler und der Gewerkschaftszugehörigkeit, der Konfession Evangelisch und des Geschlechts (geschl_rec) nicht vor. Wenn wir uns die absoluten vVrteilungen dieser Merkmalskombinationen anschauen stellen wir fest, dass keine Nullstellen vorkommen auch keine auffällig schwachbesetzten Zellen. Bei der Merkmalskombination SPD-Wähler und Bildung (bildung_rec) scheint es aber ein Problem zu geben.Die Kategorie 0 der Varibale bildung_rec weißt sehr schwache Werte auf. Allgemein gibt es kaum Fälle ind er Kategorie 0, der Variable bildung_rec. Es liegt keine vollständige Speration vor.
+
+1. Y-Werteverteilung
+
+```{r, results='markup'}
+frq(allbus$spd)
+
+```
+
+2. Vollständigkeit der Information
+
+3. (vollständige) Separation
+
+```{r}
+sjt.xtab(allbus$spd, 
+         allbus$gewerkschaft, 
+         show.exp = TRUE, 
+         show.row.prc = TRUE, 
+         show.cell.prc = TRUE, 
+         show.col.prc = TRUE)
+
+sjt.xtab(allbus$spd, 
+         allbus$evangelisch, 
+         show.exp = TRUE, 
+         show.row.prc = TRUE, 
+         show.cell.prc = TRUE, 
+         show.col.prc = TRUE)
+
+sjt.xtab(allbus$spd, 
+         allbus$bildung_rec, 
+         show.exp = TRUE, 
+         show.row.prc = TRUE, 
+         show.cell.prc = TRUE, 
+         show.col.prc = TRUE)
+
+sjt.xtab(allbus$spd, 
+         allbus$geschl_rec, 
+         show.exp = TRUE, 
+         show.row.prc = TRUE, 
+         show.cell.prc = TRUE, 
+         show.col.prc = TRUE)
+```
+

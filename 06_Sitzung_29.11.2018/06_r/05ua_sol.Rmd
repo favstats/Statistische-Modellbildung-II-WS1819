@@ -1,0 +1,177 @@
+---
+title: "Übungsaufgabe 5"
+author: "Fabio Votta"
+date: "29.November 2018"
+output: pdf_document
+---
+
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom, tidytemplate)
+```
+
+
+## Aufgabe 1
+
+*Benutzen Sie den Datensatz „SOEP_wide_lehrdaten.sav“*
+
+```{r datensatz, include=FALSE, eval = T}
+soep <- read_spss("../../data/SOEP_wide_lehrdaten.sav")
+
+soep
+
+
+```
+
+### Aufgabe 1a
+
+*Berechnen Sie ein Cross-lagged-Design mit zwei Regressionen bzgl. der Variablen Subjektive Gesundheit und Lebenszufriedenheit (Jahre 2003 und 2004)*
+
+Subjektive Gesundheit
+- `gesund_org.2003`
+- `gesund_org.2004`
+
+Lebenszufriedenheit
+- `lebensz_org.2003`
+- `lebensz_org.2004`
+
+```{r}
+lebens_mod <- lm(lebensz_org.2004 ~ gesund_org.2003 + lebensz_org.2003, data = soep)
+gesund_mod <- lm(gesund_org.2004 ~ gesund_org.2003 + lebensz_org.2003, data = soep)
+
+screenreg(list(lebens_mod, gesund_mod))
+```
+
+
+
+
+
+### Aufgabe 1b
+
+*Welche Aussage lässt sich bzgl. der Stabilität der Variablen Lebenszufriedenheit und Subj. Gesundheit machen?*
+
+Beide Stabilitätskoeffizienten sind über 0,5 und können somit als stabil gelten. Die Stabilität der Variable Gesundheit ist ein wenig höher als die der Lebenszufriedenheit. Es lässt sich jedoch keine Aussage über die Richtung bzw. Kausalität treffen.
+
+
+### Aufgabe 1c
+
+*Wie bewerten Sie die kausale Reihenfolge bzgl. der Effekte Subj. Gesundheit <-> Lebenszufriedenheit anhand der „Kreuzkoeffizienten“. Vergleichen Sie hierzu die Kreuzladungen.*
+
+T-Test:
+
+$$t_{df} = \frac{b_1 - b_2}{\sqrt{(SE_{b_1})^2 + (SE_{b_2})^2}}$$
+
+```{r}
+t_test_coefs <- function(mod1, mod2, coef1 = NULL, coef2 = NULL) {
+   
+   tidy_mod1 <- tidy(mod1) %>% 
+      filter(term == coef1)
+   
+   tidy_mod2 <- tidy(mod2) %>% 
+      filter(term == coef2)
+   
+   b1 <- tidy_mod1$estimate
+   b2 <- tidy_mod2$estimate
+
+   se1 <- tidy_mod1$std.error
+   se2 <- tidy_mod2$std.error
+
+   oben <- b1 - b2
+
+   unten <- sqrt((se1)^2 + (se2)^2)
+
+   t_value = oben/unten
+   
+   return(list(t_value = t_value))
+}
+
+
+t_test_coefs(lebens_mod, gesund_mod, 
+             coef1 = "gesund_org.2003", 
+             coef2 = "lebensz_org.2003")
+
+
+```
+
+Der Kreuzkoeffizient von Gesundheit 2003 auf Lebenszufriedenheit 2004 ist mit 0,27 größer als der von Lebenszufriedenheit 2003 auf Gesundheit 2004 (0,02). Das ist ein Hinweis auf Kausalität zwischen Gesundheit und Lebenszufriedenheit: der Gesundheitszustand hat demnach Einfluss auf die Lebenszufriedenheit. Der Unterschied zwischen den Koeffizienten ist auf dem 99%igem Signifikanz-Niveau signifikant (t = 6.49)
+
+## Aufgabe 2
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("../../data/allbus2014.sav")
+
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) %>%
+      mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+
+```
+
+*Erstellen Sie eine Interaktionsvariable zwischen Geschlecht und Alter und reduzieren Sie vor den folgenden Regressionsanalysen den Datensatz (Alter unter 46 Jahren, alter0 < 28). Modell 1 enthält dann Alter und Geschlecht, in Modell 2 kommt die Interaktionsvariable hinzu.*
+
+```{r}
+
+allb_sub_u46 <- filter(allb_sub, alter0 < 28)
+
+mod1 <- lm(einkommen ~ alter0 + geschl_rec, data = allb_sub_u46)
+mod2 <- lm(einkommen ~ alter0 + geschl_rec + alter0*geschl_rec, data = allb_sub_u46)
+
+screenreg(list(mod1, mod2))
+
+
+plot_model(mod2, type = "int")
+
+```
+
+
+
+### Aufgabe 2a
+
+_Berechnen	Sie	anhand	von	Modell	1	und	Modell	2	jeweils	das	prognostizierte	Einkommen	eines	Mannes und	einer	Frau	im	Alter	von	jeweils	30 Jahren._
+
+```{r}
+## Modell 1
+intercept_mod1 <- mod1$coefficients[1]
+alter_mod1 <- mod1$coefficients[2]
+geschl_mod1 <- mod1$coefficients[3]
+
+## Modell 1 Mann
+intercept_mod1 + 12*alter_mod1 + 1*geschl_mod1
+
+## Modell 1 Frau
+intercept_mod1 + 12*alter_mod1 + 0*geschl_mod1
+
+## Modell 2
+intercept_mod2 <- mod2$coefficients[1]
+alter_mod2 <- mod2$coefficients[2]
+geschl_mod2 <- mod2$coefficients[3]
+altgeschl_mod2 <- mod2$coefficients[4]
+
+## Modell 2 Mann
+intercept_mod2 + 12*alter_mod2 + 1*geschl_mod2 + 12*1*altgeschl_mod2
+
+
+## Modell 2 Frau
+intercept_mod2 + 12*alter_mod2 + 0*geschl_mod2 + 12*0*altgeschl_mod2
+```
+
+
+### Aufgabe 2b
+
+*Was ist dabei der Interaktionseffekt	und	wie	lässt	er	sich inhaltlich	begründen?*
+
+Der Interaktionsffekt besteht darin, dass der Zusammenhang zwischen Alter und Einkommen bei Frauen weniger stark positiv ist als bei Männern. In anderen Worten, zunehmendes Alter wirk sich für Frauen weniger stark auf das Einkommen auf als für Männer. Das Geschlecht moderiert also den Effekt von Alter auf Einkommen. Interpretiert werden könnte dies so, dass Frauen häufiger einen weniger kontinuierlichen Berufsweg haben, vor allem durch Schwangerschaft und Kindererziehung. 

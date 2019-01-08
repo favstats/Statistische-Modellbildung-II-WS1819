@@ -1,0 +1,364 @@
+---
+title: "Tipps für logistische Regression in R"
+author: "Statistische Modellbildung 2"
+date: "6. Dezember 2018"
+output: semantic.doc::semantic_document
+---
+```{r chunks, include=FALSE}
+# Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(
+  echo = T # Whether to display code along with its results
+  , eval = T # Whether to evaluate the code and include its results
+  , results = "asis" # this at deafult is in end much more efficient
+  , cache = F # Whether to cache results for future renders (efficient!)
+  , warning = F # Whether to display errors
+  , message = F # Whether to display messages
+  , error = F # maybe turn on
+  , tidy = F # Whether to reformat code in a tidy way when displaying it
+  , fig.width = 6 # plot width at 6
+  , fig.height = 4 # plot height at 4
+  , fig.align = "center" # plot alignment center
+)
+
+options(xtable.comment = FALSE, scipen = 9999)
+```
+
+Die logistische Regression kann anfangs Kopfschmerzen verursachen. Während die Struktur und die Idee der "normalen" Regression entsprechen, kann die Interpretation der b's (d.h. der Regressionskoeffizienten) schwieriger sein.
+
+Dieser Post bietet eine praktische Funktion zum Konvertieren der logits (das wird von ´glm´ ausgegeben) in eine Wahrscheinlichkeit.
+
+### Packages einladen
+
+```{r}
+#install.packages("pacman")
+#pacman::p_install_gh("favstats/tidytemplate")
+
+pacman::p_load(tidyverse, magrittr, haven, sjPlot, sjmisc, ggeffects, texreg, car, psych, knitr, labelled, broom, margins, tidytemplate)
+```
+
+**Achtung wenn ihr nicht Rstudio Cloud benutzt: für viele der Funktionen hier braucht ihr die aktuellste Version von `tidytemplate`**
+
+Installieren könnt ihr diese auf folgende Weise: 
+
+```{r, eval=F}
+#installiere pacman falls es noch nicht installiert ist
+#install.packages("pacman")
+pacman::p_install_gh("systats/semantic.doc")
+```
+
+
+### Datensatz einladen
+
+```{r setup}
+allbus <- read_spss("../../data/allbus2014.sav")
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V419)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V419) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) %>%
+      mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+
+```
+
+### Neue Variable: hohes Einkommen
+
+```{r}
+allb_sub %<>%
+    mutate(einkommen_h = ifelse(einkommen > 2500, 1, 0))
+
+allb_sub %>% 
+  janitor::tabyl(einkommen_h) %>% 
+  kable()
+```
+
+> Tipp: Der `%<>%` Operator aus dem `magrittr` package erspart ein wenig Tipparbeit. Stattdessen könnten wir auch (wie üblich) schreiben:
+
+```{r}
+allb_sub <- allb_sub %>% 
+    mutate(einkommen_h = ifelse(einkommen > 2500, 1, 0))
+```
+
+### Berechnen wir jetzt unser Modell:
+
+Die Syntax für ein logistisches Modell ähnelt sehr der Syntax für ein lineares Modell. Man benutzt einfach die Funktion `glm()` (steht für *generalized linear model*) und spezifiziert am Ende `family = "binomial"` um ein Modell für ein dichotomes logistisches Modell zu berechnen.
+
+```{r, results="asis"}
+mod1 <- glm(einkommen_h ~ bildung_rec + geschl_rec + alter0, 
+            data = allb_sub, family = "binomial")
+
+htmlreg(mod1,
+          # better for html in markdown
+          doctype = FALSE,
+          html.tag = FALSE,
+          head.tag = FALSE)
+```
+
+> Wenn der Koeffizient (logit) positiv ist, ist der Effekt dieses Prädiktors positiv und umgekehrt.
+
+
+Hier sind die Koeffizienten *positiv*, was anzeigt, dass sowohl höhere Bildung und Alter sowie männliches Geschlecht die Wahrscheinlichkeit erhöht in einer höheren Einkommensklasse zu sein (Einkommen > 2500). Neben der Signifikanz der Koeffizienten, lässt sich aus dem logit allerdings nicht direkt (zumindest nicht intuitiv) die Stärke des Effekts ablesen sondern nur die **Richtung**.
+
+### Wahrscheinlichkeit berechnen mit logits
+
+Die folgenden 3 Schritte konvertieren einen logit-Koeffizienten in eine Wahrscheinlichkeit:
+
+__1. Extrahiere die logit-Koeffizienten__
+
+__2. Berechne zunächst das $\hat z_i$ (vorhergesagter logit) und dann damit die Odds $e^{\hat z_i}$__
+
+__3. Berechne die Wahrscheinlichkeit mit Hilfe der Odds $\frac{e^{\hat z_i}}{1 +e^{\hat z_i}}$__
+
+### Anwendungsfall
+
+*Frage: Wie wahrscheinlich ist es, dass eine 30-Jährige Frau mit höchster Bildung ein Netto-Einkommen über 2500 Euro pro Monat bekommt?*
+
++ Alter: 30
+* Geschlecht: Frau
++ Bildung: Höchste Bildungstufe
+
+__1. Extrahiere die logit-Koeffizienten__
+
+Um es ein bisschen zu vereinfachen habe ich eine kleine Funktion geschrieben, welche die Koeffizienten im *wide* Format ausgibt:
+
+```{r}
+tidy_wide <- function(model) {
+  model_wide <- tidy(model) %>% # tidy extrahiert die Parameter
+  select(term, estimate) %>%    # wir brauchen nur die logit-koeffs
+  spread(term, estimate) %>%    # konvertieren in wide format
+  rename(intercept = `(Intercept)`) # umbenennen
+  return(model_wide)            # gib model_wide aus
+}
+
+```
+
+Die `tidy_wide` Funktion befindet sich im `tidytemplate` package. Wenn ihr die Rstudio Cloud benutzt, dann ist diese schon vorinstalliert und geladen.
+
+Probieren wir die Funktion doch einmal aus:
+
+```{r}
+mod1_wide <- tidy_wide(mod1)
+
+mod1_wide %>% 
+  kable()
+```
+
+
+__2. Berechne zunächst das $\hat z_i$ (vorhergesagter logit) auf folgende Art und Weise:__
+
+$$\hat z_i = a + b \times X_i$$
+
+```{r}
+mod1_wide %<>% 
+  mutate(z = intercept + 12 * alter0 + 4 * bildung_rec + 0 * geschl_rec)
+
+
+mod1_wide %>% 
+  kable()
+```
+
+Wenn wir die vorhergesagten logits ($\hat z_i$) berechnet haben, können wir diese benutzen um die Odds zu erhalten. **Odds** (Chancen) sind einfach die eulersche Zahl hoch die logits (wird mit `exp()` berechnet)
+
+$$e^{\hat z_i} = Odds$$
+```{r}
+mod1_wide %<>%  
+  mutate(odds = exp(z))
+
+mod1_wide %>% 
+  kable()
+```
+
+Die Chance, dass eine 30 Jährige Frau mit höchstem Bildungsabschluss ein hohes Einkommen erhält ist
+
+__3. Jetzt wo die Odds bekannt sind, können diese einfach in Warscheinlichkeiten umgerechnet werden mit der folgenden Formel: __
+
+$$p_i(y=1) = \frac{1}{1 + e^{- \hat z_i}} = \frac{e^{\hat z_i}}{1 +e^{\hat z_i}} = Wahrscheinlichkeit$$
+
+Das Ergebnis ist die Wahrscheinlichkeit, dass die Ausprägung 1 (hier: hohes Einkommen) unter den angegeben Prädiktoren eintritt.
+
+*Formel 1*
+
+```{r}
+mod1_wide %<>% 
+  mutate(p = 1 / (1 + exp(-z)))
+
+mod1_wide %>% 
+  kable()
+```
+
+*Formel 2*
+
+```{r}
+mod1_wide %<>% 
+  mutate(p = exp(z) / (1 + exp(z)))
+
+mod1_wide %>% 
+  kable()
+```
+
+*Oder als Funktion (im `tidytemplate` package enthalte):*
+
+```{r}
+logit2prob <- function(logit) { # logit ist der input
+  odds <- exp(logit)          # e hoch logit = odds
+  prob <- odds / (1 + odds)   # odds / 1 + odds = Wahrscheinlichkeit
+  return(prob)               # gibt Wahrscheinlichkeit zurück
+}
+```
+
+*Anwendung:*
+
+```{r}
+mod1_wide %<>% 
+  mutate(p = logit2prob(z))
+
+mod1_wide %>% 
+  kable()
+```
+
+
+Laut Model 1 beträgt die Wahrscheinlichkeit für eine 30 - Jährige Frau mit höchstem Bildungsabschluss über 2500 Euro im Monat zu verdienen 8.06%.
+
+### Andere Methoden für Wahrscheinlichkeit:
+
+```{r}
+predict(mod1, data.frame(alter0 = 12,
+                         bildung_rec = 4,
+                         geschl_rec = 0), 
+        type = "response")
+```
+
+### Aber wie berechnet man Odds Ratios?
+
+Ganz einfach! 
+
+Einfach den dazugehörigen logit-Koeffizienten als Hochzahl für die eulersche Zahl nehmen!
+
+$$e^{b_i} = Odds Ratios$$
+
+Beispiel:
+
+Um schnell die Odds Ratios für unsere Koeffizienten zu erhalten können wir ganz einfach `tidy` aus dem `broom` package benutzen.
+
+```{r}
+tidy(mod1) %>% 
+  kable()
+```
+
+Die Spalte `estimate` gibt den Logit-Koeffizienten an. Daher berechnen wir folgendermaßen die Odds Ratios:
+
+```{r}
+tidy(mod1) %>% 
+  mutate(odds_ratio = exp(estimate)) %>%  
+  kable()
+```
+
+Die Chance ein hohes Einkommen zu haben für jemanden der gar keinen Bildungsabschluss hat ist 2.12 mal höher im Vergleich zu jemanden mit einem Hauptschulabschluss.
+
+Die Odds Ratios sind tatsächlich **gleich** für jeden Sprung auf der x-Achse.
+
+**Ein paar interessante Werte:**
+
+Denke daran, dass $e^1 ≈ 2.71$. Das heißt, wenn der Logit 1 ist, liegen die Chancen bei ca. 2,7 zu 1, so ist die Wahrscheinlichkeit $\frac{2.7}{1 + 2.7}$, also ca. 0.73 oder 73%.
+
+Ähnlich interessant ist ein Logit von 0, was die folgenden Odds ergibt: $e^0 = 1$. Daher liegen die Chancen 1 : 1, d.h. bei 50%.
+
+Wenn der logit also negativ ist, liegt die zugehörige Wahrscheinlichkeit unter 50% und umgekehrt (positives logit <-> Wahrscheinlichkeit über 50%).
+
+Das lässt sich auch schematisch in einer Tabelle darstellen:
+
+```{r , results = 'asis'}
+logit_seq <- seq(-10, 10, by = 2)
+prob_seq <- round(logit2prob(logit_seq), 3)
+
+df <- data.frame(Logit = logit_seq,
+                 Wahrscheinlichkeit = prob_seq)
+kable(df)
+```
+
+Oder als Grafik:
+
+```{r}
+logit_seq <- seq(-10, 10, by = .1)
+
+prob_seq <- logit2prob(logit_seq)
+
+df <- data.frame(Logit = logit_seq,
+                 Wahrscheinlichkeit = prob_seq)
+
+ggplot(df) +
+  aes(x = logit_seq, y = prob_seq) +
+  geom_point(size = 2, alpha = .3) +
+  labs(x = "Logit", y = "Wahrscheinlichekit der Ausprägung 1 in y")
+```
+
+
+### Visualisierung mit `sjPlot`
+
+Mit dem Package `sjPlot` lässt sich auch eine logistische Regression sehr schön darstellen. Man muss dazu **nichts** zusätzlich angeben, da die Funktion automatisch ein logistisches Modell entdeckt und die entsprechenden Werte zurückgibt.
+
+
+```{r}
+library(sjPlot) #bzw. in pacman einladen
+
+plot_model(mod1, show.values = T, show.p = T)
+
+```
+
+**Die Wahrscheinlichkeiten mit zunehmenden Alter**
+
+```{r}
+plot_model(mod1, terms = "alter0", type = "pred")
+```
+
+**Die Wahrscheinlichkeiten mit zunehmenden Alter und Bildung**
+
+```{r}
+plot_model(mod1, terms = c("alter0", "bildung_rec"), type = "pred")
+```
+
+**Die Wahrscheinlichkeiten mit zunehmenden Alter, Bildung, getrennt nach Geschlecht**
+
+```{r}
+plot_model(mod1, terms = c("alter0", "bildung_rec", "geschl_rec"), type = "pred")
+```
+
+### Average Marginal Effects Plot
+
+Hierzu zunächst eine Hifsfunktion (ist im `tidytemplate` package enthalten)
+
+```{r}
+plot_ame <- function(mod1) {
+  
+model_dat <- margins(mod1) %>% summary()
+  
+model_dat %>%
+  mutate(AME = AME * 100) %>% 
+  mutate(lower = lower * 100) %>%
+  mutate(upper = upper * 100) %>% 
+  mutate(stars = tidytemplate::get_stars(p)) %>% 
+  mutate(AME_label = round(AME, 2)) %>% 
+  mutate(AME_label = paste0(AME_label, stars)) %>% 
+  ggplot() +
+  geom_point(aes(factor, AME)) +
+  geom_errorbar(aes(x = factor, ymin = lower, ymax = upper), width = 0) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "darkgrey", alpha = 0.75) +
+  geom_text(aes(factor, AME, label = AME_label), nudge_y = 0.6, nudge_x = 0.1) +
+  theme_minimal() +
+  coord_flip() +
+  labs(x = "", y = "Average Marginal Effect (AME)", title = "Average Marginal Effects Plot")
+}
+```
+
+Die Anwendung ist einfach:
+
+```{r}
+plot_ame(mod1)
+
+```
+
+
+So können wir interpretieren, dass die Wahrscheinlichkeit in einer hohen Einkommensstufe zu sein um 18.03% für einen Mann im Vergleich zu einer Frau steigt. Die Wahrscheinlichkeit in einer hohen Einkommensstufe zu sein nimmt im Schnitt 7.3% für jede Bildungsstufe zu.

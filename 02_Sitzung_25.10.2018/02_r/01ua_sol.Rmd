@@ -1,0 +1,201 @@
+---
+title: "SM II Musterlösung: Abgabe 1"
+author: "Fabio Votta"
+date: "04.November 2018"
+output: pdf_document
+---
+
+
+```{r chunks, include=FALSE}
+#Default Options - kann bei Gebrauch ge?ndert werden
+knitr::opts_chunk$set(echo = T # Whether to display code along with its results
+                      , eval = T # Whether to evaluate the code and include its results
+                      , results = "markup" # this at deafult is in end much more efficient
+                      , cache = F # Whether to cache results for future renders (efficient!)
+                      , warning = F # Whether to display errors
+                      , message = F # Whether to display messages
+                      , error = F # maybe turn on
+                      , tidy = F # Whether to reformat code in a tidy way when displaying it
+                      , fig.width = 6 #plot width at 6
+                      , fig.height = 4 #plot height at 4
+                      , fig.align = "center" #plot alignment center
+                      )
+```
+
+```{r packages, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+
+pacman::p_load(tidyverse, haven, texreg, sjmisc)
+```
+
+## Aufgabe 1
+
+### Aufgabe 1a
+
+*Was ist unter Auspartialisierung zu verstehen und wieso ist es aufgrund der beteiligten Mechanismem wichtig immer mehrere Prädiktorvariablen zu berücksichtigen, auch wenn diese ggf. keinen Einfluss auf die abhängige Variable haben?*
+
+
+Unter Auspartialisierung versteht man das "Herausrechnen" der Effekte der anderen unabhängigen Variablen, sodass Y nur auf den Teil der Varianz von X zurückgeführt wird, der nicht von den anderen unabhängigen Variablen beeinflusst wird. Hierbei werden die Effekte der anderen unabhängigen Variablen berücksichtigt und konstant gehalten. Auch wenn unabhängige X-Variablen keinen Einfluss auf die abhängige Y-Variable aufweisen, so können diese andere X-Variable beeinflussen und so den Einfluss einer X-Variable auf Y verfälschen bzw. den wahren Effekt verbergen (z.B. bei einem Suppressoreffekt). Daher ist es stets wichtig auf andere Prädiktorvariablen zu berücksichtigen, auch wenn diese keinen Einfluss auf Y nehmen.
+
+
+### Aufgabe 1b
+
+*Wieso können unabhängige Variablen ($x_i$) im multiplen Regressionsmodell einen Einfluss auf Y haben, obwohl die bivariate Korrelation zwischen ihnen und Y nicht signifikant ist?*
+
+Das kann aufgrund von sogenannten *Suppressoreffekten* der Fall sein. In einem bivariaten Zusammenhang kann der Einfluss der unabhängigen Variable auf abhängige Variablen durch Varianzanteile überlagert sein, welche nicht mit der abhängigen Variablen zusammenhängen. Daher können im bivariaten (und somit unbereinigten) Fall insignifikante Ergebnisse zustande kommen. Im multiplen Regressionsmodell wird dieser Effekt kontrolliert und bereinigt, sodass im Gesamtmodell signifikante Ergebnisse entstehen können. Wenn dies geschieht spricht man von einem *Suppressoreffekt*. Die enstprechende Varianz der unabhängigen Variable, welche keinen Einfluss auf die abhängige Variable ausübt, wird auspartialisiert und somit wird der eigentliche Effekt sichtbar.
+
+## Aufgabe 2
+
+*Bevor Sie die Analysen durchführen, suchen Sie die folgenden Variablen heraus: Alter, Geschlecht, Schulabschluss und individuelles Nettoeinkommen in der Fassung "Offene Angaben+Listeangaben".*
+
+*Kodieren Sie dann diese Variablen wie folgt:*
+
+-	*Alter: Startwert auf 0 setzen; 18=0, 48=30*
+
+-	*Schulabschluss- bzw. Schuldbildung: 5 Ausprägungen; 0=kein Schulabschluss, 1=HS, 2=RS, 3=FHR, 4=Abi; Rest=-1 bzw. Missing*
+
+-	*Geschlecht: 0=weiblich; 1=männlich*
+
+
+**1. Schritt: Datensatz einladen**
+
+```{r results='hide'}
+allbus <- read_sav("data/allbus2014.sav") 
+```
+
+\newpage
+
+**2. Schritt: relevante Variablen identifizieren**
+
++ V84	ALTER: BEFRAGTE<R>
++ V86	ALLGEMEINER SCHULABSCHLUSS
++ V81	GESCHLECHT, BEFRAGTE<R>
++ V420 NETTOEINKOMMEN<OFFENE+LISTENANGABE>,KAT.
+
+```{r}
+# binoculaR(allbus) # zum Datensatz inspizieren :)
+
+# frq aus dem sjmisc package für Häufigkeiten
+frq(allbus, V81)
+```
+
+
+**3. Schritt: Jetzt wählen wir die Variablen und erstellen ein Subset!**
+```{r}
+allb_sub <- select(allbus, V84, V86, V81, V420)
+
+```
+
+
+
+**4. Schritt: Als nächstes benennen wir die Variablen um!**
+```{r}
+allb_sub <- rename(allb_sub, alter=V84, bildung = V86, geschl = V81, einkommen = V420)
+
+```
+
+**5. Schritt: Als nächstes Rekodieren wir die Variablen**
+```{r}
+allb_sub <- mutate(allb_sub, 
+                 # Alter Rekodieren auf Startpunkt 0
+                 alter0 = alter - 18,
+                 # Bildung Rekodieren, 6 und 7 auf "Missing" setzen und Bildung - 1
+                 bildung_rec = ifelse(bildung %in% c(6, 7), NA, bildung - 1),
+                 # Geschlecht umkodieren
+                 geschl_rec = ifelse(geschl == 2, 0, 1))
+
+
+```
+
+
+
+**Bonus: Alles mit dem pipe operator `%>%`**
+
+```{r, results="markup"}
+# all together now!
+allb_sub <- allbus %>% 
+  # Variablen auswählen
+  select(V84, V86, V81, V420) %>% 
+  # Variablen umbennen
+  rename(alter=V84, bildung = V86, geschl = V81, einkommen = V420) %>%
+  # Alter Rekodieren auf Startpunkt 0
+  mutate(alter0 = alter - 18) %>%
+  # Bildung Rekodieren, 6 und 7 auf "Missing" setzen und Bildung - 1
+  mutate(bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung-1)) %>%
+  # Geschlecht umkodieren
+  mutate(geschl_rec = ifelse(geschl == 2, 0, 1))
+```
+
+\newpage
+
+## Aufgabe 3 
+
+*Berechnen Sie folgende (sequentielle) Regressionsmodelle:*
+
+-	*Modell a: Einkommen auf Alter;* 
+-	*Modell b: Einkommen auf Bildung;*
+-	*Modell c: Einkommen auf Geschlecht;*
+-	*Modell ab: Einkommen auf Alter und Bildung;*
+-	*Modell abc: Einkommen auf Alter, Bildung und Geschlecht.*
+
+```{r, results='asis'}
+modell_a <- lm(einkommen ~ alter0, data = allb_sub)
+modell_b <- lm(einkommen ~ bildung_rec, data = allb_sub)
+modell_c <- lm(einkommen ~ geschl_rec, data = allb_sub)
+modell_ab <- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub)
+modell_abc <- lm(einkommen ~ alter0 + bildung_rec + geschl_rec, data = allb_sub)
+
+#Modelle anzeigen
+#screenreg in Rstudio
+#texreg für pdf
+#htmlreg für html
+
+texreg(list(modell_a, modell_b, modell_c, modell_ab, modell_abc), 
+       caption = "Modelle 1 - 5: Standartisierte Koeffizienten", 
+       custom.coef.names = c("(Intercept)", "Alter", "Bildung", "Geschlecht (0/1)"),
+       float.pos = "ht!")
+
+
+```
+
+
+
+### Aufgabe 3a 
+
+*Vergleichen Sie die Regressionskoeffizienten über die Modelle und erläutern Sie was hier
+festzustellen ist!*
+
+In Model 1 wird ersichtlich, dass mit jedem zusätzlichen Lebensjahr das Einkommen um 0.02 Einheiten steigt (statistisch mit p < 0.001). Betrachtet man zusätzlich auch die Bildung (Model 4), wird der Koeffizient für Alter etwas größer (b = 0.04, p < 0.001). Dies deutet auf einen Supressoreffekt hin. Inhaltlich könnte dies als Lebenszykluseffekt interpretiert werden: Insbesondere viele Personen mit Abitur befinden sich durch ein Studium während jungem Lebensalter noch in Ausbildung und haben daher ein geringeres Einkommen, als die reine Kenntnis des Bildungsabschlusses dies vorhersagen würde. Durch Hinzunahme des Geschlechts ändert sich der Koeffizient nicht sichtbar im Vergleich zu Model 4 (Model 5: b = 0.04, p < 0.001). 
+
+In Model 2 wird ersichtlich, dass mit jedem höheren Bildungsabschluss das Einkommen um 1.05 Einheiten steigt (p < 0.001). Durch Hinzunahme des Alters wird der Effekt geringfügig größer (Model 4: b = 1.20, p < 0.001). Dies deutet ebenfalls auf den oben diskutierten Supressor-Effekt hin. Der Koeffizient für Bildung wird geringfügig größer, wenn Geschlecht ebenfalls im Model enthalten ist (Modell 5: b = 1.24, p < 0.001). 
+
+Männer haben durchschnittlich 3.47 Einheiten mehr Einkommen as Frauen (Model 3). Der Koeffizienten wird etwas größer, wenn ebenfalls Alter und Bildung im Modell enthalten sind (Model 5: b = 3.56, p < 0.001).
+
+
+
+### Aufgabe 3b 
+
+*Vergleichen Sie $R^2$ über die Modelle und erläutern Sie was hier festzustellen ist!*
+
+
+
+Für die drei bivariaten Modelle ist festzustellen, dass das die Kontrolle des Einflusses von Geschlecht auf das Einkommen die höchste Erklärungskraft hat, und hier 12% der Varianz des Einkommens statistisch erklärt werden können. Durch Einbezug des Bildungsstatus kann 6% der Varianz des Einkommens statistisch erklärt werden. Alter allein kann die Varianz von Einkommen kaum erklären. Für das multivariate Modell, das sowohl das Alter als auch den Bildungsstatus miteinbezieht, ist festzustellen, dass durch die Hinzunahme von Alter zum Bildungsstatus nun eine kleine Steigerung der Varianzerklärung stattgefunden hat und diese nun 8% beträgt. Das multivariate Modell, dass alle drei unabhängigen Variabeln miteinbezieht, kann 21% der Varianz des Einkommens statistisch erklären und hat somit die höchste Erklärungskraft.
+
+
+
+
+**Bonus:**
+
+Für die Visualisierung des Modell können wir `plot_model` aus dem `sjPlot` package benutzen.
+
+```{r}
+pacman::p_load(sjPlot)
+
+
+plot_model(modell_abc, show.p = T, show.values = T, type = "std")
+
+
+
+```

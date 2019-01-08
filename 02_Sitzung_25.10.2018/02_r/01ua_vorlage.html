@@ -332,11 +332,19 @@ $(document).ready(function () {
 <p><em>Kodieren Sie dann diese Variablen wie folgt:</em></p>
 <ul>
 <li><p><em>Alter: Startwert auf 0 setzen; 18=0, 48=30</em></p></li>
-<li><p><em>Schulabschluss- bzw. Schuldbildung: 5 Ausprägungen; 0=kein Schulabschluss, 1=HS, 2=RS, 3=FHR, 4=Abi; Rest=-1 bzw. Missing</em></p></li>
+<li>*Schulabschluss- bzw. Schuldbildung: 5 Ausprägungen;
+<ul>
+<li>0=kein Schulabschluss,</li>
+<li>1=HS,</li>
+<li>2=RS</li>
+<li>3=FHR</li>
+<li>4=Abi;</li>
+<li>Rest=-1 bzw. Missing*</li>
+</ul></li>
 <li><p><em>Geschlecht: 0=weiblich; 1=männlich</em></p></li>
 </ul>
 <p><strong>1. Schritt: Datensatz einladen</strong></p>
-<pre class="r"><code>allbus &lt;- read_sav(&quot;../data/allbus2014.sav&quot;) 
+<pre class="r"><code>allbus &lt;- read_sav(&quot;../data/allbus2014.sav&quot;)
 
 allbus</code></pre>
 <p><strong>2. Schritt: relevante Variablen identifizieren</strong></p>
@@ -349,6 +357,7 @@ allbus</code></pre>
 <pre class="r"><code># binoculaR(allbus) # zum Datensatz inspizieren :)</code></pre>
 <p><strong>3. Schritt: Jetzt wählen wir die Variablen und erstellen ein Subset!</strong></p>
 <pre class="r"><code>allb_sub &lt;- select(allbus, V84, V86, V81, V420)
+
 
 allb_sub</code></pre>
 </div>
@@ -367,7 +376,11 @@ allb_sub</code></pre>
 10 53 3 1 19<br />
 # … with 3,461 more rows</p>
 <p><strong>4. Schritt: Als nächstes benennen wir die Variablen um!</strong></p>
-<pre class="r"><code>allb_sub &lt;- rename(allb_sub, alter=V84, bildung = V86, geschl = V81, einkommen = V420)
+<pre class="r"><code>allb_sub &lt;- rename(allb_sub, 
+                   alter = V84, 
+                   bildung = V86, 
+                   geschl = V81, 
+                   einkommen = V420)
 
 allb_sub</code></pre>
 </div>
@@ -386,12 +399,9 @@ allb_sub</code></pre>
 # … with 3,461 more rows</p>
 <p><strong>5. Schritt: Als nächstes Rekodieren wir die Variablen</strong></p>
 <pre class="r"><code>allb_sub &lt;- mutate(allb_sub, 
-                 # Alter Rekodieren auf Startpunkt 0
-                 alter0 = alter - 18,
-                 # Bildung Rekodieren, 6 und 7 auf &quot;Missing&quot; setzen und Bildung - 1
-                 bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
-                 # Geschlecht umkodieren
-                 geschl_rec = ifelse(geschl == 2, 0, 1))
+             alter0 = alter - 18, 
+             bildung_rec = ifelse(bildung == 6 | bildung == 7 , NA, bildung - 1),
+             geschl_rec = ifelse(geschl == 2, 0, 1))
 
 
 allb_sub</code></pre>
@@ -400,34 +410,6 @@ allb_sub</code></pre>
 <h1>A tibble: 3,471 x 7</h1>
 <p>alter bildung geschl einkommen alter0 bildung_rec geschl_rec &lt;dbl+lbl&gt; &lt;dbl+lbl&gt; &lt;dbl+lbl&gt; &lt;dbl+lbl&gt; &lt;dbl+lbl&gt; <dbl> <dbl> 1 33 5 2 14 15 4 0 2 50 3 2 &quot; 9&quot; 32 2 0 3 56 3 1 17 38 2 1 4 61 3 1 &quot; 8&quot; 43 2 1 5 59 3 2 &quot; 9&quot; 41 2 0 6 56 3 1 21 38 2 1 7 66 2 1 12 48 1 1 8 25 5 2 NA &quot; 7&quot; 4 0 9 58 4 1 13 40 3 1 10 53 3 1 19 35 2 1 # … with 3,461 more rows</p>
 <p><strong>Bonus: Alles mit dem pipe operator <code>%&gt;%</code></strong></p>
-<pre class="r"><code># all together now!
-allb_sub &lt;- allbus %&gt;% 
-  # Variablen auswählen
-  select(V84, V86, V81, V420) %&gt;% 
-  # Variablen umbennen
-  rename(alter=V84, bildung = V86, geschl = V81, einkommen = V420) %&gt;%
-  # Alter Rekodieren auf Startpunkt 0
-  mutate(alter0 = alter - 18) %&gt;%
-  # Bildung Rekodieren, 6 und 7 auf &quot;Missing&quot; setzen und Bildung - 1
-  mutate(bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung-1)) %&gt;%
-  # Geschlecht umkodieren
-  mutate(geschl_rec = ifelse(geschl == 2, 0, 1))
-
-allb_sub</code></pre>
-<pre><code>## # A tibble: 3,471 x 7
-##    alter     bildung   geschl    einkommen alter0    bildung_rec geschl_rec
-##    &lt;dbl+lbl&gt; &lt;dbl+lbl&gt; &lt;dbl+lbl&gt; &lt;dbl+lbl&gt; &lt;dbl+lbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
-##  1 33        5         2         14        15                  4          0
-##  2 50        3         2         &quot; 9&quot;      32                  2          0
-##  3 56        3         1         17        38                  2          1
-##  4 61        3         1         &quot; 8&quot;      43                  2          1
-##  5 59        3         2         &quot; 9&quot;      41                  2          0
-##  6 56        3         1         21        38                  2          1
-##  7 66        2         1         12        48                  1          1
-##  8 25        5         2         NA        &quot; 7&quot;                4          0
-##  9 58        4         1         13        40                  3          1
-## 10 53        3         1         19        35                  2          1
-## # ... with 3,461 more rows</code></pre>
 <div id="aufgabe-3" class="section level2">
 <h2>Aufgabe 3</h2>
 <p><em>Berechnen Sie folgende (sequentielle) Regressionsmodelle:</em></p>
@@ -438,19 +420,266 @@ allb_sub</code></pre>
 <li><p><em>Modell ab: Einkommen auf Alter und Bildung;</em></p></li>
 <li><p><em>Modell abc: Einkommen auf Alter, Bildung und Geschlecht.</em></p></li>
 </ul>
-<pre class="r"><code>modell_a &lt;- lm(einkommen ~ alter0, data = allb_sub)
-modell_b &lt;- lm(einkommen ~ bildung_rec, data = allb_sub)
-modell_c &lt;- lm(einkommen ~ geschl_rec, data = allb_sub)
-modell_ab &lt;- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub)
-modell_abc &lt;- lm(einkommen ~ alter0 + bildung_rec + geschl_rec, data = allb_sub)
+<pre class="r"><code>moda &lt;- lm(einkommen ~ alter0, data = allb_sub)
+modb &lt;- lm(einkommen ~ bildung_rec, data = allb_sub)
+modc &lt;- lm(einkommen ~ geschl_rec, data = allb_sub)
+modab &lt;- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub)
+modabc &lt;- lm(einkommen ~ alter0 + bildung_rec + geschl_rec, data = allb_sub)
 
-#Modelle anzeigen
-texreg(list(modell_a,
-          modell_b,
-          modell_c,
-          modell_ab,
-          modell_abc))</code></pre>
-
+htmlreg(list(moda, modb, modc, modab, modabc))</code></pre>
+&lt;!DOCTYPE HTML PUBLIC “-//W3C//DTD HTML 4.01 Transitional//EN” “<a href="http://www.w3.org/TR/html4/loose.dtd" class="uri">http://www.w3.org/TR/html4/loose.dtd</a>”&gt;
+<table cellspacing="0" align="center" style="border: none;">
+<caption align="bottom" style="margin-top:0.3em;">
+Statistical models
+</caption>
+<tr>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;">
+<b></b>
+</th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;">
+<b>Model 1</b>
+</th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;">
+<b>Model 2</b>
+</th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;">
+<b>Model 3</b>
+</th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;">
+<b>Model 4</b>
+</th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;">
+<b>Model 5</b>
+</th>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+(Intercept)
+</td>
+<td style="padding-right: 12px; border: none;">
+10.53<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+8.75<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+9.33<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+7.17<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+5.15<sup style="vertical-align: 0px;">***</sup>
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.19)
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.19)
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.12)
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.28)
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.28)
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+alter0
+</td>
+<td style="padding-right: 12px; border: none;">
+0.02<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+0.04<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+0.04<sup style="vertical-align: 0px;">***</sup>
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.01)
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.01)
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.00)
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+bildung_rec
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+1.05<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+1.20<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+1.24<sup style="vertical-align: 0px;">***</sup>
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.07)
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.07)
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.07)
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+geschl_rec
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+3.47<sup style="vertical-align: 0px;">***</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+3.56<sup style="vertical-align: 0px;">***</sup>
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.17)
+</td>
+<td style="padding-right: 12px; border: none;">
+</td>
+<td style="padding-right: 12px; border: none;">
+(0.16)
+</td>
+</tr>
+<tr>
+<td style="border-top: 1px solid black;">
+R<sup style="vertical-align: 0px;">2</sup>
+</td>
+<td style="border-top: 1px solid black;">
+0.00
+</td>
+<td style="border-top: 1px solid black;">
+0.07
+</td>
+<td style="border-top: 1px solid black;">
+0.12
+</td>
+<td style="border-top: 1px solid black;">
+0.08
+</td>
+<td style="border-top: 1px solid black;">
+0.21
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+Adj. R<sup style="vertical-align: 0px;">2</sup>
+</td>
+<td style="padding-right: 12px; border: none;">
+0.00
+</td>
+<td style="padding-right: 12px; border: none;">
+0.06
+</td>
+<td style="padding-right: 12px; border: none;">
+0.12
+</td>
+<td style="padding-right: 12px; border: none;">
+0.08
+</td>
+<td style="padding-right: 12px; border: none;">
+0.21
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">
+Num. obs.
+</td>
+<td style="padding-right: 12px; border: none;">
+3064
+</td>
+<td style="padding-right: 12px; border: none;">
+3040
+</td>
+<td style="padding-right: 12px; border: none;">
+3065
+</td>
+<td style="padding-right: 12px; border: none;">
+3039
+</td>
+<td style="padding-right: 12px; border: none;">
+3039
+</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid black;">
+RMSE
+</td>
+<td style="border-bottom: 2px solid black;">
+4.95
+</td>
+<td style="border-bottom: 2px solid black;">
+4.78
+</td>
+<td style="border-bottom: 2px solid black;">
+4.65
+</td>
+<td style="border-bottom: 2px solid black;">
+4.74
+</td>
+<td style="border-bottom: 2px solid black;">
+4.40
+</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;" colspan="7">
+<span style="font-size:0.8em"><sup style="vertical-align: 0px;"><em><strong></sup>p &lt; 0.001, <sup style="vertical-align: 0px;"></strong></sup>p &lt; 0.01, <sup style="vertical-align: 0px;"></em></sup>p &lt; 0.05</span>
+</td>
+</tr>
+</table>
 <div id="aufgabe-3a" class="section level3">
 <h3>Aufgabe 3a</h3>
 <p><em>Vergleichen Sie die Regressionskoeffizienten über die Modelle und erläutern Sie was hier festzustellen ist!</em></p>

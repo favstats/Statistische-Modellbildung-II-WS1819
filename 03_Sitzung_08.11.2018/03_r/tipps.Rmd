@@ -1,0 +1,79 @@
+---
+title: "example"
+author: "Fabio Votta"
+date: "9 November 2017"
+output: html_document
+---
+
+```{r chunks, include=FALSE}
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(echo = T # Whether to display code along with its results
+                      , eval = T # Whether to evaluate the code and include its results
+                      , results = "asis" # this at deafult is in end much more efficient
+                      , cache = F # Whether to cache results for future renders (efficient!)
+                      , warning = F # Whether to display errors
+                      , message = F # Whether to display messages
+                      , error = F # maybe turn on
+                      , tidy = F # Whether to reformat code in a tidy way when displaying it
+                      , fig.width = 6 #plot width at 6
+                      , fig.height = 4 #plot height at 4
+                      , fig.align = "center" #plot alignment center
+                      )
+```
+
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("devtools")
+#devtools::install_github("Espanta/lubripack")
+
+lubripack::lubripack("tidyverse","knitr", "car", "psych", "lm.beta")
+```
+
+```{r dat}
+namen <- c("Trisha","Rabia","Halma","Franziska","Margarita",
+           "Franz","Eugen","Rodriguez","Jan","Volker")
+geschl <- c("weiblich","weiblich","weiblich","weiblich","weiblich",
+            "männlich","männlich","männlich","männlich","männlich")
+wahl <- c("SPD","Bündnis 90/Die Grünen","CDU/CSU","CDU/CSU","Die Linke",
+          "AfD","SPD","SPD","CDU/CSU","Bündnis 90/Die Grünen")
+
+set.seed(111)
+einkommen <- rnorm(10,2700,1400)
+ausländerablehnung <- rnorm(10,5,2)
+
+
+dat<-data.frame(namen,einkommen,geschl,wahl, ausländerablehnung)
+```
+
+`describe()`
+
+```{r describe}
+library(psych)
+
+dat %>%
+  describe()
+```
+
+`kable()`
+
+```{r kable}
+library(knitr)
+
+dat %>%
+  describe() %>%
+  kable()
+```
+
+
+`lm.beta()` und `summary()`
+
+```{r lm.beta}
+library(lm.beta)
+
+mod1 <- lm(ausländerablehnung ~ einkommen, dat)
+
+std.mod1 <- lm.beta(mod1)
+
+summary(std.mod1)
+```
+

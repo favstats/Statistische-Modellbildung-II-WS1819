@@ -1,0 +1,157 @@
+---
+title: "SM II: Tutorium - 7. Sitzung"
+subtitle: ""
+author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="https://twitter.com/favstats"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; www.favstats.eu</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-06-12'
+output: 
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      highlightLanguage: r
+    includes:
+      in_header: header.html      
+    countIncrementalSlides: false
+    css: xaringan-themer.css
+---
+
+<style>
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+<style>
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+</style>
+
+
+
+```{r, include = F}
+pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot, car, sjmisc, broom, psych, lm.beta, tidytemplate, stargazer, corrplot)
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+
+
+```
+
+
+# Froher Nikolaus Tag!
+
+
+<img src="http://2.bp.blogspot.com/-pQ9UGPEuNM4/UMT4Sc8i0iI/AAAAAAAAAdI/jg5Z1-te0Bw/s1600/santa+Claus.png">
+
+---
+
+## Übersicht
+
+1. Übungsaufgabe 6 in SPSS
+2. Übungsaufgabe 6 in R
+
+
+  
+<br>
+ 
+  
+
+  
+[Link zum Allbus Datensatz](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/data/allbus2014.sav)
+  
+
+
+
+  
+
+---
+
+
+
+##### Aufgabe 1
+
+
+
+Erstellen Sie zunächst dichotome Variablen für:
+
++ SPD-Wahl bei der letzten Bundestagswahl (z. B. V810)
++ die Gewerkschaftsmitgliedschaft (z. B. V606) 
++ die ev. Konfessionszugehörigkeit (z. B. V601)
+
+
+
+###### Aufgabe $1a_{i}$
+
+Berechnen Sie (anhand eines log. Regressionsmodells) die Wahrscheinlichkeit für ein aktuelles Gewerkschaftsmitglied (Konfession evangelisch) die SPD zu wählen.
+
+###### Aufgabe $1a_{ii}$
+
+Berechnen Sie (anhand eines log. Regressionsmodells) die Wahrscheinlichkeit für eine Person mit katholischer Konfession (keine Gewerkschaftsmitgliedschaft) die SPD zu wählen.
+
+
+###### Aufgabe 1b
+
+Wie fallen die Odds für diese beiden Personen aus? 
+
+---
+
+
+###### Aufgabe 1c
+
+Wie fallen die Odds Ratios bzgl. der Variablen Gewerkschaftsmitgliedschaft und Konfessionszugehörigkeit-evangelisch aus?
+
+
+###### Aufgabe 1d
+
+Über welchen Personenkreis kann dieses Modell Aussagen treffen? Denken Sie bei Ihrer Antwort an die Null-Kategorie Ihrer Variablen.
+
+
+---
+
+
+### Übungsaufgabe - SPSS
+
+<br>
+<br>
+<br>
+<br>
+
+<center>
+
+<a href="http://www.favstats.eu/smii_1819/06ua_spss_tippsntricks.html">Tipps und Tricks für die Übungsaufgabe 6 (SPSS)</a>
+
+</center>
+
+
+---
+
+
+### Übungsaufgabe - R
+
+<br>
+<br>
+<br>
+<br>
+
+<center>
+
+<a href="http://www.favstats.eu/smii_1819/06ua_r_tippsntricks.html">Tipps und Tricks für die Übungsaufgabe 6 (R)</a>
+
+</center>
+

@@ -1,0 +1,106 @@
+---
+title: "Übungsaufgabe 5"
+author: "Fabio Votta"
+date: "29.November 2018"
+output: pdf_document
+---
+
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom, tidytemplate)
+```
+
+
+## Aufgabe 1
+
+*Benutzen Sie den Datensatz „SOEP_wide_lehrdaten.sav“*
+
+```{r datensatz einladen, include=FALSE, eval = T}
+soep <- read_spss("data/SOEP_wide_lehrdaten.sav")
+
+soep
+
+
+```
+
+### Aufgabe 1a
+
+*Berechnen Sie ein Cross-lagged-Design mit zwei Regressionen bzgl. der Variablen Subjektive Gesundheit und Lebenszufriedenheit (Jahre 2003 und 2004)*
+
+Subjektive Gesundheit
+- `gesund_org.2003`
+- `gesund_org.2004`
+
+Lebenszufriedenheit
+- `lebensz_org.2003`
+- `lebensz_org.2004`
+
+```{r}
+
+
+```
+
+
+### Aufgabe 1b
+
+*Welche Aussage lässt sich bzgl. der Stabilität der Variablen Lebenszufriedenheit und Subj. Gesundheit machen?*
+
+
+### Aufgabe 1c
+
+*Wie bewerten Sie die kausale Reihenfolge bzgl. der Effekte Subj. Gesundheit <-> Lebenszufriedenheit anhand der „Kreuzkoeffizienten“. Vergleichen Sie hierzu die Kreuzladungen.*
+
+
+## Aufgabe 2
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("data/allbus2014.sav")
+
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) %>%
+      mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+
+```
+
+*Erstellen Sie eine Interaktionsvariable zwischen Geschlecht und Alter und reduzieren Sie vor den folgenden Regressionsanalysen den Datensatz, um die Fälle, bei denen die Geburtenentscheidungen keine besondere Bedeutung mehr für die Gehaltsentwicklung haben sollten (Alter unter 46 Jahren, alter0 < 28). Modell 1 enthält dann Alter und Geschlecht, in Modell 2 kommt die Interaktionsvariable hinzu.*
+
+```{r}
+
+
+
+
+
+
+```
+
+
+
+### Aufgabe 2a
+
+_Berechnen	Sie	anhand	von	Modell	1	und	Modell	2	jeweils	das	prognostizierte	Einkommen	eines	Mannes und	einer	Frau	im	Alter	von	jeweils	30 Jahren._
+
+```{r}
+
+
+
+```
+
+
+### Aufgabe 2b
+
+*Was ist dabei der Interaktionseffekt	und	wie	lässt	er	sich inhaltlich	begründen?*

@@ -1,0 +1,233 @@
+---
+title: "SM II Aufgabe 1"
+author: "Ingrid Espinoza de Saemann"
+date: "29.Oktober 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r chunks, include=FALSE}
+#rm (list = ls())
+#Default Options - kann bei Bedarf geaendert werden
+knitr::opts_chunk$set(echo = T # Whether to display code along with its results
+                      , eval = T # Whether to evaluate the code and include its results
+                      , results = "asis" # this at default is in end much more efficient
+                      , cache = F # Whether to cache results for future renders (efficient!)
+                      , warning = F # Whether to display errors
+                      , message = F # Whether to display messages
+                      , error = F # maybe turn on
+                      , tidy = F # Whether to reformat code in a tidy way when displaying it
+                      , fig.width = 6 #plot width at 6
+                      , fig.height = 4 #plot height at 4
+                      , fig.align = "center" #plot alignment center
+                      )
+```
+
+```{r packages, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+
+pacman::p_load(tidyverse, haven, texreg, sjmisc, binoculaR, dplyr, sjPlot)
+```
+
+## Aufgabe 1
+
+### Aufgabe 1a
+
+*Was ist unter Auspartialisierung zu verstehen und wieso ist es aufgrund der beteiligten Mechanismem wichtig immer mehrere Praediktorvariablen zu beruecksichtigen, auch wenn diese ggf. keinen Einfluss auf die abhaengige Variable haben?*
+
+Durch Auspartialisierung werden die empirischen Werte einer jeden unabhängigen Variable um diejenigen Anteile bereinigt, die durch Effekte der anderen unabhängigen Variablen bestimmt werden. Konkret gesagt, geht es bei der Auspartialisierung um die Bereinigung von X um die Einflüsse weiterer unabhängiger X-Variablen.
+
+Die Kontrolle der Effekte von unabhängigen Variablen durch weitere Prädiktorvariablen ist wichtig, denn Kontrollvariablen können den Einfluss von anderen unabhängigen Variablen auf die abhängige Variable z.B.: verstärken (Supressoreffekte aufdecken) oder verringern bzw. sogar aufheben (sodass sie nicht mehr signifikant sind). Auch die Richtung des Effekts einer unabhängigen Variablen kann verändert werden. Um möglicherweise versteckte Effekte aufzudecken, ist es sinnvoll, mehrere Prädiktorvariablen zu berücksichtigen.  
+
+
+### Aufgabe 1b
+
+*Wieso koennen unabhaengige Variablen ($x_i$) im multiplen Regressionsmodell einen Einfluss auf Y haben, obwohl die bivariate Korrelation zwischen ihnen und Y nicht signifikant ist?*
+
+Es kann sein, dass bspw. aufgrund eines Suppresoreffektes der wahre Effekt von einer unabhängigen Variablen verdeckt wird. Nach dem Auspartialisieren kann der "wahre" Effekt (zu einem größeren Anteil) freigelegt und signifikant werden.
+Wenn nach dem Auspartialisieren immer noch keinen signifikanten Effekt zwischen Y und xi besteht, kann es u.a. darin liegen, dass der Effekt von weiteren Variablen kontrolliert werden muss. Oder dass Erhebungsfehler vorliegen. Oder das dass Modell falsch spezifiziert wurde (Fehlerterm zur groß).
+
+
+## Aufgabe 2
+
+*Bevor Sie die Analysen durchfuehren, suchen Sie im Codebuch (o. Variablenliste) Ihres Datensatzes (ALLBUS 2014)  am besten Mittels STRG+F (aufrufen der "Suchenfunktion" in nahezu allen Programmen) die folgenden Variablen heraus: Alter, Geschlecht, Schulabschluss und individuelles Nettoeinkommen in der Fassung "Offene Angaben+Listeangaben".*
+
+*Kodieren Sie dann diese Variablen wie folgt:*
+
+-	*Alter: Startwert auf 0 setzen; 18=0, 48=30*
+
+-	*Schulabschluss- bzw. Schuldbildung: 5 Auspraegungen; 
+    + 0=kein Schulabschluss,
+    + 1=HS, 
+    + 2=RS
+    + 3=FHR
+    + 4=Abi;
+    + Rest=-1 bzw. Missing*
+
+-	*Geschlecht: 0=weiblich; 1=maennlich*
+
+
+**1. Schritt: Datensatz einladen**
+
+```{r results='hide'}
+
+
+allbus <- read_spss("allbus2014.sav")
+
+#allbus
+
+
+```
+
+**2. Schritt: relevante Variablen identifizieren**
+
++ V84	ALTER: BEFRAGTE<R>
++ V86	ALLGEMEINER SCHULABSCHLUSS
++ V81	GESCHLECHT, BEFRAGTE<R>
++ V420 NETTOEINKOMMEN<OFFENE+LISTENANGABE>,KAT.
+
+```{r}
+#binoculaR(allbus) # zum Datensatz inspizieren :)
+
+```
+
+
+**3. Schritt: Jetzt waehlen wir die Variablen und erstellen ein Subset!**
+```{r}
+
+allb_sub <- select(allbus, V84, V86, V81, V420)
+
+#allb_sub
+
+```
+
+
+
+**4. Schritt: Als naechstes benennen wir die Variablen um!**
+```{r}
+
+
+allb_sub_ren <- rename(allb_sub, alter = V84,
+       bildung = V86,
+       geschlecht = V81,
+       einkommen = V420)
+
+#allb_sub_ren
+#binoculaR(allb_sub_ren)
+
+```
+
+**5. Schritt: Als naechstes Rekodieren wir die Variablen**
+-	*Alter: Startwert auf 0 setzen; 18=0, 48=30*
+
+-	*Schulabschluss- bzw. Schuldbildung: 5 Auspraegungen; 
+    + 0=kein Schulabschluss,
+    + 1=HS, 
+    + 2=RS
+    + 3=FHR
+    + 4=Abi;
+    + Rest=-1 bzw. Missing*
+
+-	*Geschlecht: 0=weiblich; 1=maennlich*
+
+```{r}
+
+allb_sub_rec <- mutate(allb_sub_ren,
+       alter_rec = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung -1),
+       geschlecht_rec = ifelse(geschlecht == 2,0,1))
+
+#allb_sub_rec
+
+
+```
+
+
+**Bonus: Alles mit dem pipe operator `%>%`**
+
+```{r, results="markup"}
+
+
+  
+
+
+
+
+```
+
+## Aufgabe 3 
+
+*Berechnen Sie folgende (sequentielle) Regressionsmodelle:*
+
+-	*Modell a: Einkommen auf Alter;* 
+
+-	*Modell b: Einkommen auf Bildung;*
+
+-	*Modell c: Einkommen auf Geschlecht;*
+
+-	*Modell ab: Einkommen auf Alter und Bildung;*
+
+-	*Modell abc: Einkommen auf Alter, Bildung und Geschlecht.*
+
+```{r, results="markup"}
+
+
+
+modell1 <- lm(einkommen ~ alter_rec, data = allb_sub_rec)
+modell2 <- lm(einkommen ~ bildung_rec, data = allb_sub_rec)
+modell3 <- lm(einkommen ~ geschlecht_rec, data = allb_sub_rec)
+modell4 <- lm(einkommen ~ alter_rec + bildung_rec, data = allb_sub_rec)
+modell5 <- lm(einkommen ~ alter_rec + bildung_rec + geschlecht_rec, data = allb_sub_rec)
+
+screenreg(list(modell1, modell2, modell3, modell4, modell5))
+
+#htmlreg(list(modell1, modell2, modell3, modell4, modell5))
+#htmlreg Befehl zeigt keine Tabelle :(
+
+```
+
+
+### Aufgabe 3a 
+
+*Vergleichen Sie die Regressionskoeffizienten ueber die Modelle und erlaeutern Sie was hier
+festzustellen ist!*
+
+Modell 1: Wenn das Alter um einen Jahr zunimmt, dann nimmt auch das Einkommen um 0.02 Euro.
+
+Modell 2: Wenn die Bildung um einen Wert auf der Skala zunimmt, dann nimmt auch das Einkommen um 1.05 Euro. 
+
+Modell 3: Wenn das Geschlecht um einen Skalenpunkt auf der Geschlechtsskala zunimmt, dann nimmt auch das Einkommen um 3.47 Euro. 
+
+Modell 4: Wenn das Alter um einen Jahr zunimmt, dann nimmt auch das Einkommen um 0.04 Euro. Wenn die Bildung um einen Wert auf der Skala zunimmt, dann nimmt auch das Einkommen um 1.20 Euro. 
+
+Modell 5:  Wenn das Alter um einen Jahr zunimmt, dann nimmt auch das Einkommen um 0.04 Euro. Wenn die Bildung um einen Wert auf der Skala zunimmt, dann nimmt auch das Einkommen um 1.24 Euro.  Wenn das Geschlecht um einen Skalenpunkt auf der Geschlechtsskala zunimmt, dann nimmt auch das Einkommen um 3.56 Euro.
+
+Im Modell 5 ist der Einfluss von Alter auf Einkommen etwas (minimal) größer als in den anderen Modellen. Der Effekt von Bildung ist im Modell 5 auch etwas stärker als im Vergelich zu den Effekten im Modell 2 und 4. Wenn das Alter berücksicht wird, dann ist auch der Effekt von Bildung auf Einkommen etwas stärker, als wenn dies nicht der Fall ist (Modell 4). Am stärkesten ist der Einfluss von Geschlecht auf Einkommen. Es trägt am meisten zur Varianzerklärung bei (s.u.). 
+
+Alle Koeffizienten sind signifikant.
+
+### Aufgabe 3b 
+
+*Vergleichen Sie $R^2$ ueber die Modelle und erlaeutern Sie was hier festzustellen ist!*
+
+Ein Kleines R² ist Indiz für nicht ausreichende Drittvariablenkontrolle. Man kann beobachten, dass je mehr Variablen berücksichtigt werden, desto größer das R² wird. Das ist auf der einen Seite gut, denn es trägt zur Varianzaufklärung bei. Auf der anderen Seite kann es aus dem sleben Grund problematisch sein, denn man könnte beliebig viele Variablen ins Modell schmeißen, um ein hohes R² zu bekommen. Daher ist das korregierte R² sinnvoller für die Interpretation.
+
+
+
+**Bonus:**
+
+Fuer die Visualisierung des Modell koennen wir `plot_model` aus dem `sjPlot` package benutzen.
+
+```{r, include = F, eval = F}
+
+
+plot_model(modell5)
+
+
+
+
+
+```

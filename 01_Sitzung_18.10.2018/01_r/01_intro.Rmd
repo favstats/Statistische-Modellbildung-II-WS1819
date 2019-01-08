@@ -84,7 +84,7 @@ z
 
 - `==` (logisch) ist gleich
 - `!=` (logisch) ist ungleich
-- `%in%` (string) ist gleich
+- `%in%` (mehrere Werte) ist gleich
 - `>` größer als
 - `<` kleiner als
 - `>=` größer gleich

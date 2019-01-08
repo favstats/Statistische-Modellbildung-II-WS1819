@@ -1,0 +1,172 @@
+---
+title: "Musterlösung: Übungsaufgabe 2"
+author: "Fabio Votta"
+date: "14.November 2018"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+
+pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr, tidytemplate, lm.beta, stargazer)
+```
+
+## Aufgabe 1
+
+
+_Wozu werden Standardisierungen durchgeführt und wie wird dabei vorgegangen? Erläutern Sie zudem exemplarisch wozu $b^*$ benutzt wird und wie man diesen interpretiert!_
+
+$$b^* = b * \frac{s_x}{s_y}$$
+Durch die Verwendung der absoluten (also unstandardisierten) Werte hängt der nummerische Zahlenwert eines Zusammenhangs von der Skalierung der Variablen ab. Die Standardisierung dient dazu, trotz unterschiedlicher Skalen eine Aussage über die relative Stärke des Einflusses treffen zu können. 
+
+Um $b^*$ zu erhalten wird die Kovarianz durch die Standardabweichung von X und Y dividiert wird, sodass der Wert zwischen -1 und 1 rangiert. $b^*$ wird benutzt, um die Stärke des Effektes von im selben Modell enthaltenen Prädiktoren zu vergleichen. Es kann somit der einflussreichste Zusammenhang identifiziert werden. Interpretiert wird dieser wie folgt: Wenn X um eine Standardabweichung steigt, steigt y um $b^*$ Standardabweichungen. Zwischen mehreren Variablen im gleiche Modell zeigen größere (bzw. weiter von Null entfernte) Werte einen stärkeren Einfluss an.
+
+
+## Aufgabe 2
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("allbus2014.sav")
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+           bildung = V86, 
+           geschl  = V81,  
+        einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+        bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+         geschl_rec = ifelse(geschl == 2, 0, 1))
+
+```
+
+
+*Führen Sie eine z-Standardisierung für die Originalaltersvariable (alter_z) und die auf Null gesetzte Altersvariable (alter_0z) sowie für "unsere" Bildungsvariable (0 bis 4). [Daten: ALLBUS 2014]*
+
+
+```{r}
+allb_sub_z <- allb_sub %>%
+  select(einkommen, alter, alter0, geschl_rec, bildung_rec) %>%
+  mutate(alter_z = scale(alter),
+         alter0_z = scale(alter0),
+         bildung_z = scale(bildung_rec),
+         einkommen_z = scale(einkommen))
+```
+
+\newpage
+
+### Aufgabe 2a
+
+*Vergleichen Sie die Zahlenwerte, Mean und die Standardabweichung von alter$_z$ und alter_0z und erklären Sie Ihre "Beobachtung".*
+
+
+```{r}
+allb_sub_z %>%
+  select(alter_z, alter0_z) %>%
+  describe() %>%
+  select(-vars, -range, -trimmed, -mad,  -skew, -kurtosis,  -se) %>% 
+  kable()
+
+```
+
+
+Die Zahlenwerte, Mean und Standardabweichung von alter_z und alter0_z sind aufgrund der Standardisierung gleich ungeachtet dessen, dass sie davor eine andere Skalenbreite hatten.
+
+
+### Aufgabe 2b
+
+*Führen Sie eine Regression von Einkommen auf alter_0 und bildung (Modell 1) und eine Regression von einkommen_z auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
+
+```{r, results='asis'}
+mod1 <- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub_z)
+mod2 <- lm(einkommen_z ~ alter0_z + bildung_z, data = allb_sub_z)
+
+tbl_std(mod2, type = "latex")
+
+screenreg(list(mod1, mod2), float.pos = "ht!")
+
+```
+
+```{r}
+lm.beta(mod1)
+```
+
+Bei Modell 1 hat das unstandardisierte Alter einen sehr geringen positiven Einfluss von 0,039 Einheiten auf das Einkommen. Die Bildungsvariable dafür einen positiven Einfluss von 1,199. Bei Modell 2 hat sich das deutlich verändert. Die standardisierte alter0 Variable hat einen positiven Einfluss von 0,135 Standardeinheiten auf das standardisierte Einkommen. Die Bildung hier nun mit einem positiven Einfluss von 0,291 Standardeinheiten. So lässt sich nun sehen, dass Bildung einen fast doppelt so starken Einfluss auf das Einkommen ausübt als das Alter.
+
+
+### Aufgabe 2c
+
+_Wie erklären Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Modell 2 das z-transformierte Einkommen als abhängige Variable._
+
+Die b und b* Werte sind im Modell mit dem standardisierten Einkommen (beniahe) identisch. Das lässt darauf schließen lässt, dass die Standardisierung der UVs und AV im vorhinein dazu führt, dass auch der unstandardisierte Wert als standardisierter Koeffizient zu interpretieren wäre.
+
+
+## Aufgabe 3 
+
+*Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R2-Wert so groß wie nur irgendwie möglich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwünscht).*
+
+*- Einzige Einschränkung: Keine Regression von Y auf Y.*
+
+```{r, results='asis'}
+
+
+allb_r <- allbus %>%
+  select(V84, V86, V81, V420, V98, V118, V269, V103, V7, V13, V14,
+       V16, V20, V21, V22, V25, V30,V31, V494, V9, V209, V279,
+       V71, V711, V216, V215, V495, V513, V514, V377) %>%
+  rename(alter = V84,
+         bildung = V86,
+         geschl = V81,
+         einkommen = V420,
+         arbeitsstd = V118,
+         keineberufsausbildung = V98,
+         beruf = V103,
+         westost = V7,
+         internet = V14, 
+         computer = V16,
+         essen = V20,
+         besuchfreunde = V21, 
+         besuchfamilie = V22, 
+         kunst = V25,
+         theater = V30,
+         museum = V31, 
+         haushaltseinkommen = V494, 
+         wirtschaftslage = V9,
+         fernsehenmin = V71,
+         dauerbildung = V711, 
+         demzufr = V216,
+         linksrechts = V215,
+         prokopfeink = V495 ,
+         krankengeldhh = V513,
+         elterngeldhh = V514,
+         gebd = V377) %>%
+  na.omit() %>%
+  mutate(alter0 =alter -18,
+          alter0quad =alter0*alter0,
+          bildung_rec = ifelse(bildung ==6|bildung ==7,0, bildung -1),
+          geschl_rec = ifelse(geschl ==2,0,1),
+          ganztags = ifelse(beruf ==1,1,0),
+          halbtags = ifelse(beruf ==2,1,0),
+          west = ifelse(westost ==1,1,0),
+          immigrant = ifelse(gebd ==2,1,0))
+
+
+highr2  <- lm(einkommen~geschl_rec +alter0 +alter0quad +bildung_rec +
+          keineberufsausbildung +arbeitsstd +halbtags +west +
+          internet +computer +essen +besuchfreunde +besuchfamilie +kunst +
+          theater +museum +fernsehenmin +
+          haushaltseinkommen +wirtschaftslage +
+          dauerbildung +demzufr +linksrechts +
+          prokopfeink + krankengeldhh +
+          elterngeldhh +immigrant,data =allb_r)
+
+texreg(highr2, float.pos ="ht!")
+
+```
+
+
+
+
+

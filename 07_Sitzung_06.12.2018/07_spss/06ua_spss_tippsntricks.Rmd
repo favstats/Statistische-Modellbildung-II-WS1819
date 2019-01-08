@@ -1,0 +1,280 @@
+---
+title: "Tipps für logistische Regression in SPSS"
+author: "Statistische Modellbildung 2"
+date: "6. Dezember 2018"
+output: html_document
+---
+
+```{r, include = F}
+logit2prob <- function(logit) { # logit ist der input
+  odds <- exp(logit)          # e hoch logit = odds
+  prob <- odds / (1 + odds)   # odds / 1 + odds = Wahrscheinlichkeit
+  return(prob)               # gibt Wahrscheinlichkeit zurück
+}
+
+pacman::p_load(tidyverse, knitr)
+```
+
+
+Die logistische Regression kann anfangs Kopfschmerzen verursachen. Während die Struktur und die Idee der "normalen" Regression entsprechen, kann die Interpretation der b's (d.h. der Regressionskoeffizienten) schwieriger sein.
+
+Erstellen wir zunächst zwei Variablen: versuchen wir die Absicht die CDU/CSU zu wählen vorherzusagen mit Hilfe von Kirchgangshäfigkeit.
+
+```{r, eval=F}
+*Wahlabsicht: v609.
+fre v609.
+recode v609 (1=1) (2 thru 90 = 0) into cdu.
+mis val cdu (99).
+fre cdu.
+
+*Kirchgang : v604.
+compute kirchgang = 7 - v604.
+fre kirchgang.
+```
+
+Kirchgangshäufigkeit
+
+- 1 NIE
+- 2 SELTENER
+- 3 MEHRMALS IM JAHR
+- 4 1-3X PRO MONAT
+- 5 1X PRO WOCHE
+- 6 UEBER 1X DIE WOCHE
+
+### Berechnen wir unser logistisches Modell
+
+Folgende Syntax kann dabei benutzt werden. Der Befehl `/save = PRED` speichert die vorhergesagten Wahrscheinlichkeiten.
+
+```{r, eval=F}
+LOGISTIC REGRESSION VARIABLES cdu
+  /METHOD=ENTER kirchgang
+  /save = PRED.
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("C:/Users/Fabio/Documents/git_proj/Statistische-Modellbildung-II/9.Sitzung_21.12.2017/tables/m1.htm")
+```
+
+> Wenn der Koeffizient (logit) positiv ist, ist der Effekt dieses Prädiktors positiv und umgekehrt.
+
+
+Hier sind die Koeffizienten *positiv*, was anzeigt, dass sowohl höhere Bildung und Alter sowie männliches Geschlecht die Wahrscheinlichkeit erhöht in einer höheren Einkommensklasse zu sein (Einkommen > 2500). Neben der Signifikanz der Koeffizienten, lässt sich aus dem logit allerdings nicht direkt (zumindest nicht intuitiv) die Stärke des Effekts ablesen sondern nur die **Richtung**.
+
+### Wahrscheinlichkeit berechnen mit logits
+
+
+Die folgenden 3 Schritte konvertieren einen logit-Koeffizienten in eine Wahrscheinlichkeit:
+
+__1. Extrahiere die logit-Koeffizienten__
+
+__2. Berechne zunächst das $\hat z_i$ (vorhergesagter logit) und dann damit die Odds __
+
+$$\hat z_i = a + b \times X_i$$
+
+$$e^{\hat z_i} = Odds$$
+
+
+__3. Berechne die Wahrscheinlichkeit mit Hilfe der Odds__
+
+$$p_i(y=1) = \frac{1}{1 + e^{- \hat z_i}} = \frac{e^{\hat z_i}}{1 +e^{\hat z_i}} = Wahrscheinlichkeit$$
+
+### Anwendungsfall
+
+*Frage: Wie wahrscheinlich ist es, dass jemand der nie in die Kirche geht (kirchgang = 1) die CDU/CSU wählt?*
+
+
+__1. Extrahiere die logit-Koeffizienten__
+
+Der Logit Koeffizient für den Intercept: **-1.60**
+
+Der Logit Koeffizient für Kirchgang: **0.40**
+
+__2. Berechne zunächst das $\hat z_i$ (vorhergesagter logit) auf folgende Art und Weise:__
+
+
+$$\hat z = a + b \times X = -1.60 + 0.40 \times 1 = -1.2$$
+
+
+
+$$Odds = e^{\hat z} = e^{-1.2} = 0.30$$
+
+Da der Wert unter 1 liegt, lohnt es sich hier den Kehrwert zu bilden.
+
+$$Kehrwert(Odds) = \frac{1}{0.30} = 3.33$$
+
+Für Personen welche nie in die Kirche gehen ist die Chance 3.33 mal niedriger die CDU/CSU zu wählen.
+
+
+__3. Jetzt wo die Odds bekannt sind, können diese einfach in Warscheinlichkeiten umgerechnet werden mit der folgenden Formel: __
+
+$$Wahrscheinlichkeit (y=1) = \frac{e^{\hat z_i}}{1 +e^{\hat z_i}} = \frac{0.3}{1 + 0.3} =  0.23$$
+
+Die Warscheinlichkeit die CDU zu wählen für jemanden der nie in die Kirche geht ist 23%.
+
+### Aber wie berechnet man Odds Ratios?
+
+Ganz einfach! 
+
+Einfach den dazugehörigen logit-Koeffizienten als Hochzahl für die eulersche Zahl nehmen!
+
+$$Odds Ratios = e^{b} = e^{0.40} = 1.49$$
+
+Die Chance, die CDU zu wählen für jemanden der selten in die Kirche geht ist 1.49 mal höher als für jemanden der nie in die Kirche geht.
+
+Die Odds Ratios sind tatsächlich **gleich** für jeden Sprung auf der x-Achse.
+
+### Andere Methode
+
+Eine andere Methode wäre die Wahrscheinlichkeit mit Hilfe der Variable `PRE_1` zu berechnen. Das lässt sich folgendermaßen bewerstelligen:
+
+```{r, eval=F}
+TEMPORARY.
+select if kirchgang=1.
+fre PRE_1.
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("C:/Users/Fabio/Documents/git_proj/Statistische-Modellbildung-II/9.Sitzung_21.12.2017/tables/m2.htm")
+```
+
+Darauf achten, dass jeder Parameter einen Wert bekommt (gegebenenfalls auch `0`)!
+
+Also z.B.:
+
+```{r, eval=F}
+TEMPORARY.
+select if kirchgang=1 and var1  = 0 and var2 = 0.
+fre PRE_1.
+```
+
+**Ein paar interessante Werte:**
+
+Denke daran, dass $e^1 ≈ 2.71$. Das heißt, wenn der Logit 1 ist, liegen die Chancen bei ca. 2,7 zu 1, so ist die Wahrscheinlichkeit $\frac{2.7}{1 + 2.7}$, also ca. 0.73 oder 73%.
+
+Ähnlich interessant ist ein Logit von 0, was die folgenden Odds ergibt: $e^0 = 1$. Daher liegen die Chancen 1 : 1, d.h. bei 50%.
+
+Wenn der logit also negativ ist, liegt die zugehörige Wahrscheinlichkeit unter 50% und umgekehrt (positives logit <-> Wahrscheinlichkeit über 50%).
+
+Das lässt sich auch schematisch in einer Tabelle darstellen:
+
+```{r , results = 'asis'}
+logit_seq <- seq(-10, 10, by = 2)
+prob_seq <- round(logit2prob(logit_seq), 3)
+
+df <- data.frame(Logit = logit_seq,
+                 Wahrscheinlichkeit = prob_seq)
+kable(df)
+```
+
+Oder als Grafik:
+
+```{r}
+logit_seq <- seq(-10, 10, by = .1)
+
+prob_seq <- logit2prob(logit_seq)
+
+df <- data.frame(Logit = logit_seq,
+                 Wahrscheinlichkeit = prob_seq)
+
+ggplot(df) +
+  aes(x = logit_seq, y = prob_seq) +
+  geom_point(size = 2, alpha = .3) +
+  labs(x = "Logit", y = "Wahrscheinlichekit der Ausprägung 1 in y")
+```
+
+## Average Marginal Effects in SPSS
+
+
+**SPSS-Syntax zur Ermittlung des AME für eine dichotome X-Variable (vgl. Urban/Mayerl 2018: 413):**
+
+```{r, eval = F}
+LOGISTIC REGRESSION VARIABLES Y-Variable
+/METHOD=ENTER X1-Variable X2-Variable.
+
+COMPUTE b0= [Intercept des Regressionsmodells].
+COMPUTE b1= [Koeffizient der X1-Variablen].
+COMPUTE b2= [Koeffizient der X2-Variablen.].
+COMPUTE z0= (b0) + (b1*0) + (b2*[X2-Variable]).
+COMPUTE exp0= exp(z0).
+COMPUTE p0= exp0/(1+exp0).
+COMPUTE z1=(b0) + (b1*1) + (b2*[X2-Variable]).
+COMPUTE exp1=exp(z1).
+COMPUTE p1=exp1/(1+exp1).
+COMPUTE me=(p1-p0). 
+*Bem.: Ermittlung der marginalen Effekte von X1.
+FRE me / STATISTICS=MEAN. 
+*Bem.: der Mean entspricht dem AME von X.
+```
+
+**Einfach überall wo eine eckige Klammer ist eure Werte einsetzen (ohne eckige Klammern)**.
+
+Die X1-Variable sollte hierbei die dichotome Dummy Variable sein.
+
+
+Beispiel:
+
+
+Kurzes erstellen einer Dummyvariable für Geschlecht:
+
+```{r, eval = F}
+*Geschlecht.
+Recode v81 (2=0) (1=1) (else=copy) into geschl_rec.
+variable labels geschl_rec "Geschlecht mit w=0".
+value labels geschl_rec 0"weiblich" 1"männlich".
+
+
+```
+
+Jetzt einsetzen:
+
+```{r, eval = F}
+LOGISTIC REGRESSION VARIABLES cdu
+/METHOD=ENTER geschl_rec kirchgang.
+
+COMPUTE b0= -1.677.
+COMPUTE b1= 0.406.
+COMPUTE b2= 0.122.
+COMPUTE z0= (b0) + (b1*0) + (b2*kirchgang.).
+COMPUTE exp0= exp(z0).
+COMPUTE p0= exp0/(1+exp0).
+COMPUTE z1=(b0) + (b1*1) + (b2*kirchgang.).
+COMPUTE exp1=exp(z1).
+COMPUTE p1=exp1/(1+exp1).
+COMPUTE me=(p1-p0). 
+*Bem.: Ermittlung der marginalen Effekte von X1.
+FRE me / STATISTICS=MEAN. 
+*Bem.: der Mean entspricht dem AME von X.
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("C:/Users/Fabio/Documents/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m9.htm")
+```
+
+Der Mean entspricht dem AME von X.
+
+**SPSS-Syntax zur Ermittlung des AME für eine kontinuerliche X-Variable (vgl. Urban/Mayerl 2018: 414):**
+
+```{r, eval = F}
+
+LOGISTIC REGRESSION VARIABLES Y-Variable
+  /METHOD=ENTER X1-Variable X2-Variable.
+
+
+COMPUTE b0= [Intercept des Regressionsmodells].
+COMPUTE b1= [Koeffizient der X1-Variablen].
+COMPUTE b2= [Koeffizient der X2-Variablen.].
+FRE [X2-Variable] /STATISTICS=STDDEV. 
+*Bem.: Ermittlung der StAbw. von X2
+COMPUTE delta = [Standardabweichung von X2] /1000.
+COMPUTE z0=(b0) + (b1* [X1-Variable]) + (b2* [X2-Variable]).
+COMPUTE exp0=exp(z0).
+COMPUTE p0=exp0/(1+exp0).
+COMPUTE z1=(b0) + (b1* [X1-Variable]) + (b2*( [X2-Variable] + delta)).
+COMPUTE exp1=exp(z1).
+COMPUTE p1=exp1/(1+exp1).
+COMPUTE me=(p1-p0)/(delta).
+*Bem.: Ermittlung der margin. Efekte von X2
+FRE me / STATISTICS=MEAN. 
+*Bem.: der Mean entspricht dem AME von X2
+```
+

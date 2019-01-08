@@ -1,0 +1,164 @@
+---
+title: "SM II: Tutorium - 4 Sitzung"
+subtitle: ""
+author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="https://twitter.com/favstats"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; www.favstats.eu</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-15-11'
+output: 
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      highlightLanguage: r
+    includes:
+      in_header: header.html      
+    countIncrementalSlides: false
+    css: xaringan-themer.css
+---
+
+<style>
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+<style>
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+</style>
+
+
+
+```{r, include = F}
+pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot, sjmisc, psych, lm.beta, tidytemplate, stargazer, corrplot)
+```
+
+
+## Übersicht
+
+1. Übungsaufgabe 3 in SPSS
+2. Übungsaufgabe 3 in R
+  
+  
+[Link zum Datensatz](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/data/allbus2014.sav)
+  
+[Link zur Übungsaufgabe 3 - SPSS](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/04_Sitzung_15.11.2018/03_spss/03ua_vorlage.sps)
+  
+[Link zur Übungsaufgabe 3 - R](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/04_Sitzung_15.11.2018/03_r/03ua_vorlage.Rmd)
+  
+
+---
+
+class: center, middle
+
+## Thema der Übungsaufgabe
+
+### Regressionsdiagnostik
+
+---
+
+## Regressionsdiagnostik
+
++ **A1:** Heteroskedastizität (Streuungsungleichheit)
+
++ **A2:** 0-Mittelwert der Residuen (Kann nicht überprüft werden)
+
++ **A3:** Unkorreliertheit der Fehler
+
++ **A4:** Keine Autokorrelation (vor allem bei Zeitreihen relevant)
+
++ **A5:** Normalverteilungsannahme
+
+[Interaktive App zur Visualisierung der Annahmen einer linearen Regression](https://favstats.shinyapps.io/regdiag/#section-modelldiagnostik)
+
+---
+
+#### Aufgabe 1
+
+.seventyfive[
+
+Erstellen Sie ein Streudiagramm zwischen den Residuen der Regression von "prestige_befragter" auf "bildung_befragter". Beschreiben Sie das Diagramm. Ist A1 verletzt?
+
+Prestigeskalen: MPS, SIOPS und ISEI
+
+]
+
+#### Aufgabe 2
+
+.seventyfive[
+
+Erstellen Sie eine Regression von Einkommen auf Alter (alter_0) und speichern Sie dabei die unstandardisierten sowie die standardisierte Residuen Erstellen Sie anschließend ein Streudiagramm für die beiden unterschiedlichen Residuenarten.
+
+]
+
+###### Aufgabe 2a
+
+.seventyfive[
+
+Was ist der Unterschied zwischen den beiden Residuenarten und wie werden die standardisierten Residuen gebildet?
+]
+
+###### Aufgabe 2b
+
+.seventyfive[
+
+Beschreiben Sie die beiden Streudiagramme. Gibt es Unterschiede, falls nein, hängt dies mit der Art der Erstellung der Variablen zusammen? Beziehen Sie sich bei Ihrer Antwort auf die statistische Kenngrößen.
+
+]
+
+---
+
+#### Aufgabe 3
+
+Anhand der Scatterplots (Streudiagramme) lässt sich vermuten, dass zwischen verschiedenen Altersgruppen Varianzinhomogenität (Verletzung A1) besteht.
+
+
+###### Aufgabe 3a
+
+
+Erläutern Sie das Prinzip nach welchem der Test funktioniert, der angewendet werden muss, um zu prüfen, ob die identifizierten Gruppen Varianzhomogenität aufweisen.
+
+###### Aufgabe 3b
+
+Testen Sie die Annahme A3 und A5 (Test der Gesamtheit der Residuen) für die Residuen von Aufgabe 3. Sind die Annahmen erfüllt? Welche Einschränkungen müssen bzgl. des Tests für A5 beachtet werden?
+
+---
+
+### Übungsaufgabe - SPSS
+
+<br>
+<br>
+<br>
+
+[Tipps und Tricks für die Übungsaufgabe 3 (SPSS)](http://www.favstats.eu/smii_1819/03ua_spss_tippsntricks.html)
+
+
+
+
+---
+
+### Übungsaufgabe - R
+
+<br>
+<br>
+<br>
+
+[Tipps und Tricks für die Übungsaufgabe 3 (R)](http://www.favstats.eu/smii_1819/03ua_r_tippsntricks.html)
+
+
+

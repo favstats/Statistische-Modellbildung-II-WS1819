@@ -1,0 +1,143 @@
+---
+title: "Tipps für Übungaufgabe 7"
+date: "13. Dezember 2018"
+output: html_document
+---
+
+```{r chunks, include=FALSE}
+# Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(
+  echo = T # Whether to display code along with its results
+  , eval = T # Whether to evaluate the code and include its results
+  , results = "asis" # this at deafult is in end much more efficient
+  , cache = F # Whether to cache results for future renders (efficient!)
+  , warning = F # Whether to display errors
+  , message = F # Whether to display messages
+  , error = F # maybe turn on
+  , tidy = F # Whether to reformat code in a tidy way when displaying it
+  , fig.width = 6 # plot width at 6
+  , fig.height = 4 # plot height at 4
+  , fig.align = "center" # plot alignment center
+)
+
+options(xtable.comment = FALSE, scipen = 9999)
+```
+
+
+### Packages einladen
+
+```{r}
+#install.packages("pacman")
+#pacman::p_install_gh("favstats/favstats")
+
+pacman::p_load(tidyverse, magrittr, haven, sjPlot, sjmisc, ggeffects, texreg, car, psych, knitr, BaylorEdPsych, lmtest, margins, tidytemplate)
+```
+
+### Datensatz einladen
+
+```{r setup}
+allbus <- read_spss("../../data/allbus2014.sav")
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V419)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V419) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) %>%
+      mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+
+```
+
+### Neue Variable: hohes Einkommen
+
+```{r}
+allb_sub %<>%
+    mutate(einkommen_h = ifelse(einkommen > 2500, 1, 0))
+
+allb_sub %>% 
+  janitor::tabyl(einkommen_h) %>% 
+  kable()
+```
+
+
+### Berechnen wir jetzt unser Modell:
+
+Die Syntax für ein logistisches Modell ähnelt sehr der Syntax für ein lineares Modell. Man benutzt einfach die Funktion `glm()` (steht für *generalized linear model*) und spezifiziert am Ende `family = "binomial"` um ein Modell für ein dichotomes logistisches Modell zu berechnen.
+
+```{r, results="asis"}
+mod1 <- glm(einkommen_h ~ bildung_rec, 
+            data = allb_sub, family = "binomial")
+
+htmlreg(mod1,
+          # better for html in markdown
+          doctype = FALSE,
+          html.tag = FALSE,
+          head.tag = FALSE)
+
+mod2 <- glm(einkommen_h ~ bildung_rec + geschl_rec, 
+            data = allb_sub, family = "binomial")
+
+htmlreg(mod2,
+          # better for html in markdown
+          doctype = FALSE,
+          html.tag = FALSE,
+          head.tag = FALSE)
+```
+
+### AME berechnen
+
+```{r}
+plot_ame(mod1)
+
+plot_ame(mod2)
+```
+
+
+### Pseudo $R^2$
+
+```{r}
+
+data.frame(mod1 = PseudoR2(mod1), mod2 = PseudoR2(mod2)) %>%  
+  kable()
+
+```
+
+### LR - Test
+
+```{r, results='markup'}
+lrtest(mod2, mod1)
+```
+
+### Regressionsdiagnostik
+
+1. Y-Werteverteilung
+
+```{r, results='markup'}
+frq(allb_sub$einkommen_h)
+
+```
+
+2. Vollständigkeit der Information
+
+3. (vollständige) Separation
+
+```{r}
+
+
+sjt.xtab(allb_sub$einkommen_h, 
+         allb_sub$bildung_rec, 
+         show.exp = TRUE, 
+         show.row.prc = TRUE, 
+         show.cell.prc = TRUE, 
+         show.col.prc = TRUE)
+
+sjt.xtab(allb_sub$einkommen_h, 
+         allb_sub$geschl_rec, 
+         show.exp = TRUE, 
+         show.row.prc = TRUE, 
+         show.cell.prc = TRUE, 
+         show.col.prc = TRUE)
+
+```

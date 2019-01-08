@@ -73,9 +73,9 @@ ANTWORT HIER EINTRAGEN
 **1. Schritt: Datensatz einladen**
 
 ```{r results='hide'}
+allbus <- read_sav("../data/allbus2014.sav")
 
-
-
+allbus
 ```
 
 **2. Schritt: relevante Variablen identifizieren**
@@ -93,8 +93,10 @@ ANTWORT HIER EINTRAGEN
 
 **3. Schritt: Jetzt wählen wir die Variablen und erstellen ein Subset!**
 ```{r}
+allb_sub <- select(allbus, V84, V86, V81, V420)
 
 
+allb_sub
 
 ```
 
@@ -102,19 +104,25 @@ ANTWORT HIER EINTRAGEN
 
 **4. Schritt: Als nächstes benennen wir die Variablen um!**
 ```{r}
+allb_sub <- rename(allb_sub, 
+                   alter = V84, 
+                   bildung = V86, 
+                   geschl = V81, 
+                   einkommen = V420)
 
-
-
-
+allb_sub
 ```
 
 **5. Schritt: Als nächstes Rekodieren wir die Variablen**
 ```{r}
 
+allb_sub <- mutate(allb_sub, 
+             alter0 = alter - 18, 
+             bildung_rec = ifelse(bildung == 6 | bildung == 7 , NA, bildung - 1),
+             geschl_rec = ifelse(geschl == 2, 0, 1))
 
 
-
-
+allb_sub
 
 ```
 
@@ -135,7 +143,7 @@ ANTWORT HIER EINTRAGEN
 ## Aufgabe 3 
 
 *Berechnen Sie folgende (sequentielle) Regressionsmodelle:*
-
+p
 -	*Modell a: Einkommen auf Alter;* 
 
 -	*Modell b: Einkommen auf Bildung;*
@@ -147,16 +155,13 @@ ANTWORT HIER EINTRAGEN
 -	*Modell abc: Einkommen auf Alter, Bildung und Geschlecht.*
 
 ```{r}
+moda <- lm(einkommen ~ alter0, data = allb_sub)
+modb <- lm(einkommen ~ bildung_rec, data = allb_sub)
+modc <- lm(einkommen ~ geschl_rec, data = allb_sub)
+modab <- lm(einkommen ~ alter0 + bildung_rec, data = allb_sub)
+modabc <- lm(einkommen ~ alter0 + bildung_rec + geschl_rec, data = allb_sub)
 
-
-
-
-
-
-
-
-
-
+htmlreg(list(moda, modb, modc, modab, modabc))
 
 ```
 

@@ -47,7 +47,15 @@ allb_sub <- allbus %>%
 
 
 ```{r}
+allb_sub <- allb_sub %>% 
+  mutate(bild_tert = ifelse(bildung_rec > 2, 1 ,0))
 
+fit1 <- lm(einkommen ~ bildung_rec + geschl_rec + 
+               alter0 + bild_tert + 
+               geschl_rec * alter0 + 
+               alter0 * bild_tert, data = allb_sub)
+
+texreg(fit1, float.pos = "!h")
 
 
 
@@ -60,13 +68,37 @@ allb_sub <- allbus %>%
 
 *Berechnen Sie das Konfidenzintervall für die Variablen bild_tert und Alter mittels der Koeffizienten und interpretieren Sie diese.*
 
-$$KI_{95} = b \pm  t_{df} \times SE_b$$ 
+$$KI_{95} = b \pm  t_{n} \times SE_b$$ 
 
-Für $df > 120$ und $95\%$ Signifikanzniveau ist der kritische Wert $t = 1.96$ 
+Für $n > 120$ und $95\%$ Signifikanzniveau ist der kritische Wert $t_{krit} = 1.96$ 
 
-Für $df > 120$ und $99\%$ Signifikanzniveau ist der kritische Wert $t = 2.58$ 
+Für $n > 120$ und $99\%$ Signifikanzniveau ist der kritische Wert $t_{krit} = 2.58$ 
 
 ```{r}
+tidy(fit1) %>% 
+   mutate(low_se_95 = estimate - 1.96 * std.error) %>% 
+   mutate(high_se_95 = estimate + 1.96 * std.error) %>% 
+   kable()
+```
+
+Oder:
+
+```{r}
+# confint(fit1) #Konfidenzintervalle anzeigen lassen
+
+coefs <- tidy(fit1) %>% 
+        filter(term == "bild_tert" | term == "alter0") %>% 
+        mutate(estimate = round(estimate,3),
+               std.error = round(std.error,3)) %>% 
+        select(term, estimate, std.error)
+
+
+
+coefs$low.se.95 <- round(coefs$estimate - 1.96 * coefs$std.error, 3)
+coefs$high.se.95 <- round(coefs$estimate + 1.96 * coefs$std.error, 3)
+
+
+kable(coefs)
 
 
 ```
@@ -78,7 +110,18 @@ Für $df > 120$ und $99\%$ Signifikanzniveau ist der kritische Wert $t = 2.58$
 *Testen Sie das Gesamtmodell auf Linearität.*
 
 ```{r}
+diag_mod <- augment(mod1)
 
+
+diag_mod %>% #Datensatz 
+  plot_scatter(.fitted, .std.resid, #x und y definieren 
+               fit.line = "loess",  #zeige eine loess Kurve
+               show.ci = T,         #zeige das Konfidenzintervall
+               title = "Test auf Linearität",   #Titel der Grafik
+               axis.titles = c("Geschätzte Werte",
+                               "Standardisierte Residuen"))
+
+plot_model(mod1, type = "slope")
 
 ```
 
@@ -96,7 +139,8 @@ _Wie ausgeprägt ist die Multikollinearität im Regressionsmodell von Aufgabe 1?
 
 
 ```{r}
-
+data.frame(vif = vif(mod1),
+           toleranz = (1/vif(mod1)))
 ```
 
 ## Aufgabe 4
@@ -109,7 +153,7 @@ Tipp: siehe Urban/Mayerl 2011: 159f.
 $$N = \frac{\lambda}{f^2}$$
 
 ```{r}
-
+24 / 0.1
 ```
 
 

@@ -1,0 +1,143 @@
+---
+title: "SM II Abgabe 2"
+author: "Ingrid Espinoza de Sämann"
+date: "12.November 2018"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+
+pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr, binoculaR, favstats/tidytemplate)
+```
+
+## Aufgabe 1
+
+
+_Wozu werden Standardisierungen durchgefuehrt und wie wird dabei vorgegangen? Erlaeutern Sie zudem exemplarisch wozu $b^*$ benutzt wird und wie man diesen interpretiert!_
+
+$$b^* = b * \frac{s_x}{s_y}$$
+
+Eine gaengige Art und Weise, Standarisierungen durchzufuehren, ist mithilfe der z-Transformation. Z-Werte, auch genannt Standarwerte, werden in einer Form umgewandelt, die es erlaubt, sie mit Werten derselben oder einer anderen Verteilung zu vergleichen. Man erzeugt sie, indem man von jedem Messwert (Rohwert) das arithmetische Mittel substrahiert und die Diferrenz durch die Standarabweichung dividiert. Jede Verteilung von z-Werten hat ein arithmetisches Mittel von Null und eine Standardabweichung von Eins. Die Abweichungen der Messwerte vom aritmetischen Mittel werden in Standardabweichungseinheiten augedrueckt. Z-transformierten Variablen sind bei der Bildung Indizes aus Variblen unterschiedlicher Skalierung sehr praktisch.
+
+$b^*$ ist ein standarisierte Regressionkoeffizient. Standarisiert wird der Slope durch die Bereinigung um die Metrik von Y (der Divisor (Sy)) und die Gewichtung um die Metrik von X (der Dividend (Sx)). $b^* = b (Sx/Sy)$ Es gibt Auskunft über die Staerke eines Zusammenhaenges. Mit deren Hilfe kann das 'einflusstaerkste' Zusammenhang identifiziert werden. Er ist so zu interpretieren, dass bei Veraenderung von X um eine Standardabweichung, sich Y um $b^*$-Standarabweichungen ändert. Da der Koeffizient standarisiert ist, kann man innerhalb eines Modells die verschiedenen Koeffizienten auf ihren jeweiligen Einfluss vergleichen. Da $b^*$ stichprobenabhängig ist, sollte er nicht zwischen Modelle verglichen werden. 
+
+
+## Aufgabe 2
+
+```{r datensatz einladen, include=FALSE}
+getwd(
+  
+)
+allbus <- read_spss("allbus2014.sav")
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+           bildung = V86, 
+           geschl  = V81,  
+        einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+        bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+         geschl_rec = ifelse(geschl == 2, 0, 1))
+allb_sub
+
+```
+
+
+*Fuehren Sie eine z-Standardisierung fuer die Originalaltersvariable (alter_z) und die auf Null gesetzte Altersvariable (alter_0z) sowie fuer "unsere" Bildungsvariable (0 bis 4). [Daten: ALLBUS 2014]*
+
+
+```{r}
+
+allb_sub_z <- allb_sub %>%
+  mutate(alter_z = scale(alter, center = F, scale = T)) %>%
+  mutate(alter0_z = scale(alter0, center = F, scale = T)) %>%
+  mutate(bildung_z = scale(bildung, center = F, scale = T)) %>%
+  mutate(einkommen_z = scale(einkommen, center = F, scale = T))
+
+allb_sub_z
+```
+
+
+### Aufgabe 2a
+
+*Vergleichen Sie die Zahlenwerte, Mean und die Standardabweichung von alter$_z$ und alter_0z und erklaeren Sie Ihre "Beobachtung".*
+
+
+Dadurch, dass beide Variablen stadarisiert wurden, weisen sie sehr aenhliche Werte auf, denn sie sind praktisch gleich skaliert. 
+
+```{r}
+allb_sub_z %>%
+  describe() %>%
+  select(-vars, -range, -trimmed, -mad,  -skew, -kurtosis,  -se) %>%
+  kable()
+```
+
+
+### Aufgabe 2b
+
+*Fuehren Sie eine Regression von Einkommen auf alter_0 und bildung (Modell 1) und eine Regression von einkommen_z auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
+
+
+Es macht keinen Unterschied, wenn man vor der Regression standarisiert ober ob man es in der Regression macht. Die Werte von Modell 2 sind die standarisierten Koeffizienten von Modell 1 (s. lmbeta)
+
+
+```{r}
+
+mod1 <- lm(einkommen ~ alter0 + bildung, data = allb_sub_z)
+
+mod2 <- lm(einkommen_z ~ alter0_z + bildung_z, data = allb_sub_z)
+
+screenreg(list(mod1, mod2))
+
+#install.packages("lm.beta")
+library(lm.beta)
+lm.beta(mod1)
+
+
+```
+
+
+
+### Aufgabe 2c
+
+_Wie erklaeren Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Modell 2 das z-transformierte Einkommen als abhaengige Variable._
+
+
+B Werte geben Auskunft über die Größe eines Einflusses (EInkommen). Standarisierte Werte geben Auskunft über die Stärke eines Effekts (wie viel Varianz wird gebunden?)
+Die Werte von Modell 2 sind die standarisierten Koeffizienten von Modell 1 (s. lmbeta)
+
+
+## Aufgabe 3 
+
+*Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R2-Wert so gross wie nur irgendwie möeglich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwuenscht).*
+
+*- Einzige Einschraenkung: Keine Regression von Y auf Y.*
+
+```{r}
+
+#binoculaR(allbus)
+
+#cor_matrix <- allbus %>% 
+  #select(V420, V9, V70, V71, V81, V116, V190, V214, V279, V377, V448, V456, V491, V492, V496) %>% 
+  #cor()
+#corrplot(cor_matrix, type = "lower", order = "hclust", tl.srt = 45)
+
+#Regression
+
+mod3 <- lm(V420 ~ V9 + V70 + V71 + V81 + V116 + V190 + V214 + V279 + V377 + V448 + V456 + V491 + V49 + V496, data = allbus)
+
+screenreg(mod3)
+```
+
+Zwar ist kaum ein Koeffizient signifikant, mein $R²$ ist aber schoen hoch! <3 
+
+
+

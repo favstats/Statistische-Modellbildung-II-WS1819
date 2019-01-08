@@ -1,0 +1,253 @@
+---
+title: "SM II Musterlösung: Abgabe 1"
+author: "Fabio Votta"
+date: "04.November 2018"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+
+```{r chunks, include=FALSE}
+#Default Options - kann bei Gebrauch ge?ndert werden
+knitr::opts_chunk$set(echo = T # Whether to display code along with its results
+                      , eval = F # Whether to evaluate the code and include its results
+                      , results = "asis" # this at deafult is in end much more efficient
+                      , cache = F # Whether to cache results for future renders (efficient!)
+                      , warning = F # Whether to display errors
+                      , message = F # Whether to display messages
+                      , error = F # maybe turn on
+                      , tidy = F # Whether to reformat code in a tidy way when displaying it
+                      , fig.width = 6 #plot width at 6
+                      , fig.height = 4 #plot height at 4
+                      , fig.align = "center" #plot alignment center
+                      )
+```
+
+## Aufgabe 1
+
+### Aufgabe 1a
+
+*Was ist unter Auspartialisierung zu verstehen und wieso ist es aufgrund der beteiligten Mechanismem wichtig immer mehrere Prädiktorvariablen zu berücksichtigen, auch wenn diese ggf. keinen Einfluss auf die abhängige Variable haben?*
+
+
+Unter Auspartialisierung versteht man das "Herausrechnen" der Effekte der anderen unabhängigen Variablen, sodass Y nur auf den Teil der Varianz von X zurückgeführt wird, der nicht von den anderen unabhängigen Variablen beeinflusst wird. Hierbei werden die Effekte der anderen unabhängigen Variablen berücksichtigt und konstant gehalten. Auch wenn unabhängige X-Variablen keinen Einfluss auf die abhängige Y-Variable aufweisen, so können diese andere X-Variable beeinflussen und so den Einfluss einer X-Variable auf Y verfälschen bzw. den wahren Effekt verbergen (z.B. bei einem Suppressoreffekt). Daher ist es stets wichtig auf andere Prädiktorvariablen zu berücksichtigen, auch wenn diese keinen Einfluss auf Y nehmen.
+
+
+### Aufgabe 1b
+
+*Wieso können unabhängige Variablen ($x_i$) im multiplen Regressionsmodell einen Einfluss auf Y haben, obwohl die bivariate Korrelation zwischen ihnen und Y nicht signifikant ist?*
+
+Das kann aufgrund von sogenannten *Suppressoreffekten* der Fall sein. In einem bivariaten Zusammenhang kann der Einfluss der unabhängigen Variable auf abhängige Variablen durch Varianzanteile überlagert sein, welche nicht mit der abhängigen Variablen zusammenhängen. Daher können im bivariaten (und somit unbereinigten) Fall insignifikante Ergebnisse zustande kommen. Im multiplen Regressionsmodell wird dieser Effekt kontrolliert und bereinigt, sodass im Gesamtmodell signifikante Ergebnisse entstehen können. Wenn dies geschieht spricht man von einem *Suppressoreffekt*. Die enstprechende Varianz der unabhängigen Variable, welche keinen Einfluss auf die abhängige Variable ausübt, wird auspartialisiert und somit wird der eigentliche Effekt sichtbar.
+
+## Aufgabe 2
+
+*Bevor Sie die Analysen durchführen, suchen Sie die folgenden Variablen heraus: Alter, Geschlecht, Schulabschluss und individuelles Nettoeinkommen in der Fassung "Offene Angaben+Listeangaben".*
+
+*Kodieren Sie dann diese Variablen wie folgt:*
+
+-	*Alter: Startwert auf 0 setzen; 18=0, 48=30*
+
+-	*Schulabschluss- bzw. Schuldbildung: 5 Ausprägungen; 0=kein Schulabschluss, 1=HS, 2=RS, 3=FHR, 4=Abi; Rest=-1 bzw. Missing*
+
+-	*Geschlecht: 0=weiblich; 1=männlich*
+
+**Rekodieren - Alter**
+
+```{r, results='hide'}
+compute alter0= v84-18.
+
+variable labels alter0 "Alter mit 18 als Nullpunkt".
+
+FREQUENCIES VARIABLES=alter0
+  /STATISTICS=STDDEV MINIMUM MAXIMUM MEAN MEDIAN SKEWNESS KURTOSIS.
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m1.htm")
+```
+
+<br>
+
+**Rekodieren - Bildung**
+
+```{r, results='hide'}
+Recode v86 (1=0) (2=1) (3=2) (4=3) (5=4) (else=SYSMIS) into bildung_rec.
+variable labels bildung_rec "Abschluss umkodiert".
+value labels bildung_rec 0"Kein Schulabschluss" 1"Hauptschule" 2"Realschule" 3"Fachhochschulreife" 4"Abi".
+
+FREQUENCIES VARIABLES=bildung_rec
+  /STATISTICS=STDDEV MINIMUM MAXIMUM MEAN MEDIAN SKEWNESS KURTOSIS.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m2.htm")
+```
+
+<br>
+
+**Rekodieren - Geschlecht**
+
+```{r, results='hide'}
+Recode v81 (2=0) (1=1) (else=copy) into geschl_rec.
+variable labels geschl_rec "Geschlecht mit w=0".
+value labels geschl_rec 0"weiblich" 1"m?nnlich".
+
+FREQUENCIES VARIABLES=geschl_rec
+  /STATISTICS=STDDEV MINIMUM MAXIMUM MEAN MEDIAN SKEWNESS KURTOSIS.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m3.htm")
+```
+
+<br>
+
+**Umbenennen - Einkommen**
+
+```{r, results='hide'}
+COMPUTE einkommen = v420.
+
+FREQUENCIES VARIABLES=einkommen 
+  /STATISTICS=STDDEV MINIMUM MAXIMUM MEAN MEDIAN SKEWNESS KURTOSIS.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m4.htm")
+```
+
+
+
+
+## Aufgabe 3 
+
+*Berechnen Sie folgende (sequentielle) Regressionsmodelle:*
+
+<br>
+
+
+**-	Modell a: Einkommen auf Alter;**
+
+```{r, results='hide'}
+REGRESSION
+  /DESCRIPTIVES MEAN STDDEV CORR SIG N
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA CHANGE
+  /NOORIGIN
+  /DEPENDENT einkommen
+  /METHOD=ENTER alter0.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m5.htm")
+htmltools::includeHTML("m6.htm")
+```
+
+<br>
+
+
+**-	Modell b: Einkommen auf Bildung;**
+
+```{r, results='hide'}
+REGRESSION
+  /DESCRIPTIVES MEAN STDDEV CORR SIG N
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA CHANGE
+  /NOORIGIN
+  /DEPENDENT einkommen
+  /METHOD=ENTER bildung_rec.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m7.htm")
+htmltools::includeHTML("m8.htm")
+```
+
+<br>
+
+**-	Modell c: Einkommen auf Geschlecht;**
+
+```{r, results='hide'}
+REGRESSION
+  /DESCRIPTIVES MEAN STDDEV CORR SIG N
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA CHANGE
+  /NOORIGIN
+  /DEPENDENT einkommen
+  /METHOD=ENTER geschl_rec.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m9.htm")
+htmltools::includeHTML("m10.htm")
+```
+
+<br>
+
+**-	Modell ab: Einkommen auf Alter und Bildung;**
+
+```{r, results='hide'}
+REGRESSION
+  /DESCRIPTIVES MEAN STDDEV CORR SIG N
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA CHANGE
+  /NOORIGIN
+  /DEPENDENT einkommen
+  /METHOD=ENTER alter0 bildung_rec.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m11.htm")
+htmltools::includeHTML("m12.htm")
+```
+
+<br>
+
+**-	Modell abc: Einkommen auf Alter, Bildung und Geschlecht.**
+
+```{r, results='hide'}
+REGRESSION
+  /DESCRIPTIVES MEAN STDDEV CORR SIG N
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA CHANGE
+  /NOORIGIN
+  /DEPENDENT einkommen
+  /METHOD=ENTER alter0 bildung_rec geschl_rec.
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("m13.htm")
+htmltools::includeHTML("m14.htm")
+```
+
+
+### Aufgabe 3a 
+
+*Vergleichen Sie die Regressionskoeffizienten über die Modelle und erläutern Sie was hier
+festzustellen ist!*
+
+In Model a wird ersichtlich, dass mit jedem zusätzlichen Lebensjahr das Einkommen um 0.02 Einheiten steigt (statistisch mit p < 0.001). Betrachtet man zusätzlich auch die Bildung (Model ab), wird der Koeffizient für Alter etwas größer (b = 0.04, p < 0.001). Dies deutet auf einen Supressoreffekt hin. Inhaltlich könnte dies als Lebenszykluseffekt interpretiert werden: Insbesondere viele Personen mit Abitur befinden sich durch ein Studium während jungem Lebensalter noch in Ausbildung und haben daher ein geringeres Einkommen, als die reine Kenntnis des Bildungsabschlusses dies vorhersagen würde. Durch Hinzunahme des Geschlechts ändert sich der Koeffizient nicht sichtbar im Vergleich zu Model ab (Model abc: b = 0.04, p < 0.001). 
+
+In Model b wird ersichtlich, dass mit jedem höheren Bildungsabschluss das Einkommen um 1.05 Einheiten steigt (p < 0.001). Durch Hinzunahme des Alters wird der Effekt geringfügig größer (Model ab: b = 1.20, p < 0.001). Dies deutet ebenfalls auf den oben diskutierten Supressor-Effekt hin. Der Koeffizient für Bildung wird geringfügig größer, wenn Geschlecht ebenfalls im Model enthalten ist (Modell abc: b = 1.24, p < 0.001). 
+
+Männer haben durchschnittlich 3.47 Einheiten mehr Einkommen as Frauen (Model c). Der Koeffizienten wird etwas größer, wenn ebenfalls Alter und Bildung im Modell enthalten sind (Model abc: b = 3.56, p < 0.001).
+
+
+
+#### Aufgabe 3b 
+
+*Vergleichen Sie $R^2$ über die Modelle und erläutern Sie was hier festzustellen ist!*
+
+
+
+Für die drei bivariaten Modelle ist festzustellen, dass das die Kontrolle des Einflusses von Geschlecht auf das Einkommen die höchste Erklärungskraft hat, und hier 12% der Varianz des Einkommens statistisch erklärt werden können. Durch Einbezug des Bildungsstatus kann 6% der Varianz des Einkommens statistisch erklärt werden. Alter allein kann die Varianz von Einkommen kaum erklären. Für das multivariate Modell, das sowohl das Alter als auch den Bildungsstatus miteinbezieht, ist festzustellen, dass durch die Hinzunahme von Alter zum Bildungsstatus nun eine kleine Steigerung der Varianzerklärung stattgefunden hat und diese nun 8% beträgt. Das multivariate Modell, dass alle drei unabhängigen Variabeln miteinbezieht, kann 21% der Varianz des Einkommens statistisch erklären und hat somit die höchste Erklärungskraft.
+

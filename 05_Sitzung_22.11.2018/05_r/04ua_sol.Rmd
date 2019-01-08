@@ -1,0 +1,194 @@
+---
+title: "Übungsaufgabe 4"
+author: "Fabio Votta"
+date: "27.November 2018"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom, tidytemplate)
+```
+
+
+```{r datensatz einladen, include=FALSE}
+allbus <- read_spss("../../data/allbus2014.sav")
+allb_sub <- allbus %>% 
+     # select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) 
+```
+
+
+## Aufgabe 1
+
+*Erstellen Sie eine Regression von Einkommen auf Bildung, Geschlecht und Alter sowie der Dummyvariablen Zugang zu tertiärer Bildung (bild_tert), die null kodiert ist, wenn der betreffende Befragte einen niedrigeren Schulabschluss als Fachhochschulreife hat und eins, wenn Umgekehrtes der Fall ist. Hinzu kommen die Interaktionsvariablen zwischen Geschlecht und Alter (gesch_alter) sowie zwischen Alter und Zugang zu tertiärer Bildung (alt_tert).*
+
+- `0`   OHNE ABSCHLUSS
+- `1`   VOLKS-,HAUPTSCHULE
+- `2`   MITTLERE REIFE
+- `3`   FACHHOCHSCHULREIFE
+- `4`   HOCHSCHULREIFE
+
+
+```{r, results='asis'}
+allb_sub <- allb_sub %>% 
+  mutate(bild_tert = ifelse(bildung_rec > 2, 1 ,0))
+
+fit1 <- lm(einkommen ~ bildung_rec + geschl_rec + 
+               alter0 + bild_tert + 
+               geschl_rec * alter0 + 
+               alter0 * bild_tert, data = allb_sub)
+
+texreg(fit1, float.pos = "!h")
+
+
+
+```
+
+
+### Aufgabe 1a
+
+
+*Berechnen Sie das Konfidenzintervall für die Variablen bild_tert und Alter mittels der Koeffizienten und interpretieren Sie diese.*
+
+$$KI_{95} = b \pm  t_{n} \times SE_b$$ 
+
+Für $n > 120$ und $95\%$ Signifikanzniveau ist der kritische Wert $t_{krit} = 1.96$ 
+
+
+
+```{r}
+tidy(fit1) %>% 
+   select(term, estimate, std.error) %>% 
+   mutate_if(is.numeric, ~round(., digits = 3)) %>% # alle numeric Variablen runden
+   mutate(low_se_95 = estimate - 1.96 * std.error) %>% 
+   mutate(high_se_95 = estimate + 1.96 * std.error) %>% 
+   kable()
+```
+
+
+Fuer $n > 120$ und $95\%$ Signifikanzniveau ist der kritische Wert $t_{krit} = 1.96$
+
+Mit $95\%$-iger Wahrscheinlichkeit liegt das $\beta$ für tertiäre Bildung zwischen den Grenzen von -2.75 und -0.92.
+Mit $95\%$-iger Wahrscheinlichkeit liegt das $\beta$ für Alter zwischen den Grenzen von -0.03 und 0.01.
+
+Da das Konfidenzintervall von Alter die 0 mit einschließt, lässt sich davon ausgehen dass der b-Koeffizient nicht statistisch signifikant ist (Signifikanzniveau = 95%).
+
+### Aufgabe 1b
+
+*Testen Sie das Gesamtmodell auf Linearität.*
+
+```{r, fig.height=4}
+diag_mod <- augment(fit1)
+
+
+diag_mod %>% #Datensatz 
+  plot_scatter(.fitted, .std.resid, #x und y definieren 
+               fit.line = "loess",  #zeige eine loess Kurve
+               show.ci = T,         #zeige das Konfidenzintervall
+               title = "Test auf Linearität",   #Titel der Grafik
+               axis.titles = c("Geschätzte Werte",
+                               "Standardisierte Residuen"))
+
+plot_model(fit1, type = "slope")
+
+```
+
+Durch eine visuelle Untersuchung der Residuen und der vorhergesagten Werte und einer Loess-Kurve kann vermutet werden, dass ein nicht-linearer Zusammenhang besteht. Diese Nicht-Linearität kommt höchstwahrscheinlich von dem quadratischen Effekt von Alter.
+
+## Aufgabe 2
+
+*Was ist unter Multikollinearität zu verstehen, warum ist es ein Problem, wenn diese in einer Modellschätzung vorliegt und wie kann das Vorliegen derselben diagnostiziert werden?*
+
+Eine Multikollinerarität liegt vor, wenn unabhängige Variablen untereinander korrelieren. Problematisch ist das, weil bei einer zu hohen Korrelation zwischen den unabhängigen Variablen die Effekte nicht mehr auf einzelne unabhängige Variablen zurückzuführen sind und die b-Koeffizienten sowie Standardfehler stark verzerrt werden. 
+Ob Multikollinearität vorliegt, kann man zum Beispiel durch das Erstellen einer Korrelationsmatrix, in welcher alle bivariaten Zusammenhänge aller unabhängigen Variablen berechnet werden, überprüfen. Eine weitere Möglichkeit ist die Berechnung der Toleranzwerte (oder VIF-Werte) für die X-Variablen. So wird angegeben, wie hoch die eigenständige Erklärungskraft einer X-Variable ist, also wie viel Anteil an Varianz sie selbst erklären kann. Sinkt dieser Wert unter 0,2 (über 5 VIF), hat die Variable wenig Eigenerklärungskraft.
+
+
+
+## Aufgabe 3 
+
+_Wie ausgeprägt ist die Multikollinearität im Regressionsmodell von Aufgabe 1? Welche Gründe (inhaltliche) lassen sich für die Multikollinearität identifizieren?_
+
+
+```{r, fig.height=4}
+plot_model(fit1, type = "diag")
+
+data.frame(vif = vif(fit1),
+           toleranz = (1/vif(fit1))) %>% 
+   kable()
+```
+
+Die VIF-Werte sollten den Grenzwert von 5 nicht überschreiten (bzw. Toleranzwerte über 0.2). Dies tun allerdings sowohl die eigentliche Bildungs-Variable, als auch die Dummy-Bildungs-Variable, als auch die Interaktionsvariable von Geschlecht und Alter. 
+
+Die Multikollinearität kann in diesem Modell ganz klar darauf zurück geführt werden, dass die Dummy-Variable `bild_tert` sich mit der Bildungsvariable informationstechnisch überschneidet sowie Interaktionsvariablen mit aufgenommen wurden.
+
+## Aufgabe 4
+
+_Bestimmen Sie den minimalen Stichprobenumfang für eine Variablenbeziehung in der Höhe von ca. f2=0.1. Die Variablenbeziehung soll in einem Regressionsmodell mit 20 weiteren Kontrollvariablen mit einer Power von 0.8 und einem Signifikanzniveau von 95% (bzw. Irrtumswahrscheinlichkeit 0.05) getestet werden. Stellen Sie Ihren Denk- /Rechenvorgang dar._
+
+
+Tipp: siehe Urban/Mayerl 2011: 159f.
+
+Die Teststärke ist eine Funktion der drei Faktoren Signifikanzniveau, geschätzte
+Effektstärke und Stichprobenumfang. Deswegen lässt sich der notwendige Stichprobenumfang aus einer vorab festgelegten Teststärke, einem bestimmten Signifikanzniveau und einer erwarteten Effektstärke ableiten (a-priori-Analyse).
+
+Folgende Werte sind gegeben:
+
+- Variablenbeziehung: $f^2 = 0.1$
+
+- Anzahl der Kontrollvariablen: $20$
+
+- Teststärke: $80\%$
+
+- Signifikanzniveau: $95\%$ (Irrtumswahrscheinlichkeit $\alpha = 0.05$)
+
+Gesucht:
+
+- N (Stichprobenumfang)
+
+Nun ist in einem ersten Schritt den Nonzentralitätsparameter $\lambda$ zu berechnen. 
+Ist dieser berechnet sind sämtliche Größen vorhanden um die umgeformte Gleichung zur Berechnung von *N* auflösen zu können.
+
+Der Nonzentralitätsparameter $\lambda$ ergibt sich aus einer Teststärkentabelle für die Analyse mit Alpha = 0.05, gemäß dem gewählten Signifikanzniveau. Unser **u**, also die Anzahl unabhängiger Modellvariablen, beträgt 21. Somit betrachten wir in der Tetstärkentabelle die Zeile mit u = 21 bzw. 20.
+
+In der entsprechenden Zeile der Teststärkentabelle wird nun der erste Wert gesucht, bzw. der kleinste Wert, der die geforderte Teststärke von $80\% (=0.8)$ erstmalig überschreitet. Ist dieser gefunden, kann die notwendige Stichprobengröße abgeleitet werden, aus der umgeformten Gleichung:
+ 
+$$N = \frac{\lambda}{f^2}$$
+
+
+Für den Nonzentralitätsparameter $\lambda$ wird auf diese Weise ein Wert von 24 aus der 
+Teststärkentabelle ermittelt (u = 20).
+
+
+Somit ergibt sich unter den angeführten
+Randbedingungen eine optimale Stichprobengröße von 240, um mit einer
+Wahrscheinlichkeit von 80 Prozent einen signifikanten Effekt zu entdecken.
+
+$$N = \frac{24}{0.1} = 240$$
+
+
+## Aufgabe 5
+
+_Welche Form von Fehlschluss wird durch ein niedriges Signifikanzniveau "begünstigt"?_ 
+
+Der Fehler 1.Art wird von einem niedrigen Signifikanzniveau "begünstigt".  denn dadurch wird die H1 angenommen, auch wenn in der Tat H0 beibehalten werden sollte. Es wird angenommen dass es ein Effekt besteht, auch wenn dieser nicht vorhanden ist. 
+
+
+## Aufgabe 6
+
+_In welchen Fällen ist es sinnvoll das Signifikanzniveau höher anzusetzen als 95%?_
+
+Das Signifikanzniveau höher als 95% ergibt Sinn, wenn die Fallzahl des untersuchten Samples sehr hoch ist, da eine hohe Fallzahl oftmals signifikante Ergbenisse erzeugen. Ein anderer Anwendungsfall wäre auch wenn die potentiellen Folgen eines begangenen Fehlers (*false positives* oder *false negatives*) zu kostspielig sind (z.B. medizinische Untersuchungen).

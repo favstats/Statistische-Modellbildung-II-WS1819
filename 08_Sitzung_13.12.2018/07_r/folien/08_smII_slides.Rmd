@@ -1,0 +1,171 @@
+---
+title: "SM II: Tutorium - 8. Sitzung"
+subtitle: ""
+author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="https://twitter.com/favstats"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; www.favstats.eu</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-13-12'
+output: 
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      highlightLanguage: r
+    includes:
+      in_header: header.html      
+    countIncrementalSlides: false
+    css: xaringan-themer.css
+---
+
+<style>
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+<style>
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+</style>
+
+
+
+```{r, include = F}
+pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot, car, sjmisc, broom, psych, lm.beta, tidytemplate, stargazer, corrplot)
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+
+
+```
+
+
+
+## Übersicht
+
+1. Übungsaufgabe 7 in SPSS
+2. Übungsaufgabe 7 in R
+
+
+  
+<br>
+ 
+  
+
+  
+[Link zum Allbus Datensatz](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/data/allbus2014.sav)
+  
+
+
+
+  
+
+---
+
+
+
+##### Aufgabe 1
+
+
+
+Erstellen Sie zunächst dichotome Variablen für:
+
++ SPD-Wahl bei der letzten Bundestagswahl (z. B. V810)
++ die Gewerkschaftsmitgliedschaft (z. B. V606) 
++ die ev. Konfessionszugehörigkeit (z. B. V601)
+
+
+
+###### Aufgabe 1a
+
+Berechnen Sie (anhand eines log. Regressionsmodells) die Wahrscheinlichkeit für ein aktuelles Gewerkschaftsmitglied (Konfession evangelisch) die SPD zu wählen.
+
+###### Aufgabe 1b
+
+Berechnen und interpretieren Sie die AMEs fuer beide unabhängige Variablen.
+
+
+
+###### Aufgabe 1c
+
+Berechnen Sie ein weiteres (nested) log. Regression mit zwei weiteren (frei wählbaren) unabhängigen Variablen (Modell 2)
+
+---
+
+
+###### Aufgabe 1d
+
+Erläutern Sie das Prinzip von McFaddens-R2 und des Nagelkerke-$R^2$
+
+
+###### Aufgabe 1e
+
+Interpretieren Sie diese für beide Modelle.
+
+
+##### Aufgabe 2
+
+Welches der beiden Modelle weist die bessere Passung an die empirischen Daten auf? Erläutern Sie, wie Sie zur Feststellung dieses Sachverhaltes vorgehen müssen und beziehen Sie sich dabei auf das Prinzip der Devianz (vgl. die Berechnung von Pseudo-$R^2$). Berechnen Sie einen Likelihood Ratio-$\chi^2$-Test mit Modell 2 und Modell 1.
+
+---
+
+##### Aufgabe 3
+
+Regressionsdiagnostik zu Modell 2
+
+###### Aufgabe 3a
+
+Was können Sie über die Verteilung der Fälle aussagen? Erläutern Sie das Vorgehen und Ihr Ergebnis.
+
+###### Aufgabe 3b
+
+Können Sie Verzerrungen mit Blick auf die Y-Werteverteilung, die Vollständigkeit der Information und die (vollständige) Separation identifizieren?
+
+
+---
+
+
+### Übungsaufgabe - SPSS
+
+<br>
+<br>
+<br>
+<br>
+
+<center>
+
+<a href="http://www.favstats.eu/smii_1819/07ua_spss_tippsntricks.html">Tipps und Tricks für die Übungsaufgabe 7 (SPSS)</a>
+
+</center>
+
+
+---
+
+
+### Übungsaufgabe - R
+
+<br>
+<br>
+<br>
+<br>
+
+<center>
+
+<a href="http://www.favstats.eu/smii_1819/07ua_r_tippsntricks.html">Tipps und Tricks für die Übungsaufgabe 7 (R)</a>
+
+</center>
+

@@ -1,0 +1,127 @@
+﻿* Encoding: UTF-8.
+RECODE V84 (18=0)
+(19=1)
+(20=2)
+(21=3)
+(22=4)
+(23=5)
+(24=6)
+(25=7)
+(26=8)
+(27=9)
+(28=10)
+(29=11)
+(30=12)
+(31=13)
+(32=14)
+(33=15)
+(34=16)
+(35=17)
+(36=18)
+(37=19)
+(38=20)
+(39=21)
+(40=22)
+(41=23)
+(42=24)
+(43=25)
+(44=26)
+(45=27)
+(46=28)
+(47=29)
+(48=30)
+(49=31)
+(50=32) 
+(51=33)
+(52=34)
+(53=35)
+(54=36)
+(55=37)
+(56=38)
+(57=39)
+(58=40)
+(59=41)
+(60=42)
+(61=43)
+(62=44)
+(63=45)
+(64=46)
+(65=47)
+(66=48)
+(67=49)
+(68=50)
+(69=51)
+(70=52)
+(71=53)
+(72=54)
+(73=55)
+(74=56)
+(75=57)
+(76=58)
+(77=59)
+(78=60)
+(79=61)
+(80=62)
+(81=63)
+(82=64)
+(83=65)
+(84=66)
+(85=67)
+(86=68)
+(87=69)
+(88=70)
+(89=71)
+(90=72)
+(91=73) into age.
+
+FREQUENCIES age.
+FREQUENCIES V84.
+
+RECODE V81 (1=1) (2=0) into sex.
+
+VALUE LABELS sex
+1 männlich
+0 weiblich.
+
+FREQUENCIES sex.
+FREQUENCIES V81.
+
+RECODE V86 (1=0) (2=1) (3=2) (4=3) (5=4) (6,7=-1) (99=99) into education.
+
+VALUE LABELS education
+0  kein Schulabschluss
+1  Hauptschule
+2  mittlere Reife
+3  FHR
+4  Abi
+-1  Rest
+99  Missing Value.
+
+FREQUENCIES education.
+FREQUENCIES V86.
+
+REGRESSION
+/MISSING LISTWISE
+/STATISTICS COEFF OUTS R ANOVA
+/CRITERIA=PIN(.05) POUT(.10)
+/NOORIGIN
+/DEPENDENT V420
+/METHOD=ENTER age
+/METHOD=ENTER education
+/METHOD=ENTER sex.
+
+REGRESSION
+/MISSING LISTWISE
+/STATISTICS COEFF OUTS R ANOVA
+/CRITERIA=PIN(.05) POUT(.10)
+/NOORIGIN
+/DEPENDENT V420
+/METHOD=ENTER education.
+
+REGRESSION
+/MISSING LISTWISE
+/STATISTICS COEFF OUTS R ANOVA
+/CRITERIA=PIN(.05) POUT(.10)
+/NOORIGIN
+/DEPENDENT V420
+/METHOD=ENTER sex.

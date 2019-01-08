@@ -1,0 +1,82 @@
+---
+title: "ifelse Showcase"
+author: "Fabio Votta"
+date: "29.Oktober 2018"
+output: html_document
+---
+
+`ifelse` funktioniert nach folgender Logik:
+
+1. Argument: `logischer Test` 
+2. Argument: was soll passieren wenn `TRUE` 
+3. Argument: was soll passieren wenn `FALSE`
+
+Was heißt es nochmal wenn etwas `TRUE` oder `FALSE` ist? Beziehungsweise, was ist ein logischer Test?
+
+Zunächst generieren wir einen Vektor:
+
+```{r}
+gender <- c(1, 2, 1 ,2, 2, 2, 1, NA)
+
+```
+
+Gehen wir davon aus dass 2 hier männlich repräsentiert und 1 weiblich.
+
+Wie testen wir jetzt darauf wer einen Wert 2 also männlich hat? Mit dem folgenden logischen Test: `==`
+
+```{r}
+gender == 1
+```
+
+Ein `TRUE` taucht auf für jede Stelle an der gender gleich 2 ist! Umgekehrt heißt das auch, dass ein `FALSE` auftaucht wenn gender ungleich 2 ist.
+
+Erinnern wir uns jetzt an die `ifelse` Funktion. Das erste Argument ist der logische Test, das zweite Argument der neue Wert für jede Stelle die der logische Test als `TRUE` ausgibt und das dritte Argument ist der neue Wert für jede Stelle an die der logische Test ein `FALSE` ausgibt.
+
+Wollen wir also die numerischen Ausprägungen 1 und 2 in jeweils weiblich und männlich umwandeln, dann machen wir das so:
+
+```{r}
+ifelse(gender == 2, "männlich", "weiblich")
+```
+
+Das erste Argument gibt einen Vektor aus mit `TRUE` und `FALSE`, das zweite Argument überschreibt alle `TRUE` mit "männlich" und das dritte Argument überschreibt alle `FALSE` mit "weiblich".
+
+Wollen wir diese in die numerischen Werte 0 und 1 für weiblich und männlich umwandeln dann können wir das auf folgender Art machen:
+
+```{r}
+ifelse(gender == 2, 1, 0)
+```
+
+Innerhalb des `mutate` Befehls sieht das ganze dann so aus:
+
+```{r}
+library(tidyverse)
+
+## Beispieldatensatz erstellen
+bsp_dat <- data.frame(gender)
+
+bsp_dat
+```
+
+```{r}
+mutate(bsp_dat, gender_rec = ifelse(gender == 2, 1, 0))
+```
+
+Hier nochmal ein Übersicht der verschiedenen logischen Operatoren :P
+
+**Boolean**
+
+- `&` (logisch) und
+- `|` (logisch) oder
+- `!` (logisch) nicht
+
+**Weitere Operatoren**
+
+- `==` (logisch) ist gleich
+- `!=` (logisch) ist ungleich
+- `%in%` (mehrere Werte) ist gleich
+- `>` größer als
+- `<` kleiner als
+- `>=` größer gleich
+- `<=` kleiner gleich
+- `is.na()` ist gleich NA (fehlender Wert)
+- `!is.na()` ist ungleich NA 

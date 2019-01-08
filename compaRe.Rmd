@@ -1,0 +1,72 @@
+---
+title: "Tidy Template"
+author: "Fabio Votta"
+date: "The Date"
+output: html_document
+---
+
+This script is about:
+
+
+
+## Packages and Folders
+
+```{r}
+# Install these packages if you don't have theme yet
+# devtools::install_github("favstats/tidytemplate")
+# install.packages("pacman")
+
+pacman::p_load(tidyverse)
+
+# Creates folders
+# tidytemplate::data_dir()
+# tidytemplate::images_dir()
+```
+
+https://www.denishaine.ca/blog/popepi-rmd/
+
+https://csullender.com/2015/02/08/google-scholar-visualization/
+
+## Load Data
+
+```{r, data}
+# RgScholar::google_Scholar('heart rate')
+# 
+# https://scholar.google.de/scholar?hl=en&as_sdt=0%2C5&q=%E2%80%9Cthe+R+software%E2%80%9D+OR+%E2%80%9Cthe+R+project%E2%80%9D+OR+%E2%80%9Cr+project+org%E2%80%9D+OR+%E2%80%9CR+development+core%E2%80%9D+OR+ggplot2+OR+%E2%80%9Cr+function%E2%80%9D+OR+%E2%80%9Cr+package%E2%80%9D&btnG=
+```
+
+```{r}
+
+```
+
+
+## Analysis / Dataviz
+
+```{r, analysis}
+dat <- tibble(x = 1:10, y = 21:30, z = 21:30,a = 21:30,f = 21:30,g = 21:30,l = 21:30) %>% 
+  mutate(fuck = x * y) %>% 
+  mutate(lol = x * f) %>% 
+  mutate(lol2 = x * f) %>% 
+  mutate(lol3 = x * f)
+
+dat$ldkf <- 500
+dat$ldkf <- 500
+dat$ldkf <- 500
+
+dat %>% 
+  mutate(fuck = x * y) %>% 
+  mutate(lol = x * f) %>% 
+  select(x, y, z)
+
+```
+
+köfgmknfgfg
+
+```{r}
+dat %>% 
+  ggplot(aes(x)) +
+  geom_histogram()
+```
+
+
+## Conclusion

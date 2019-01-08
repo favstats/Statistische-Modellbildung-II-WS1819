@@ -1,0 +1,133 @@
+---
+title: "Übungsaufgabe 6"
+author: "Fabio Votta"
+date: "6. Dezember 2017"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, margins, knitr, labelled, broom, tidytemplate)
+```
+
+
+```{r datensatz einladen, include=FALSE, eval = T}
+allbus <- read_spss("data/allbus2014.sav")
+```
+
+## Aufgabe 1
+
+*Erstellen Sie zunächst dichotome Variablen für SPD-Wahl bei der letzten Bundestagswahl (z. B. V810), die Gewerkschaftsmitgliedschaft (z. B. V606) und die ev. Konfessionszugehörigkeit (z. B. V601).*
+
+**`V810` ZWEITSTIMME, LETZTE BUNDESTAGSWAHL**
+
+- 1  CDU-CSU
+- 2  SPD
+- 3  FDP
+- 4  DIE GRUENEN
+- 6  DIE LINKE
+- 20 NPD
+- 41 PIRATEN
+- 42 AFD
+- 43 FREIE WAEHLER
+- 90 ANDERE PARTEI
+
+**`V606` MITGLIED IN EINER GEWERKSCHAFT?**
+
+- 1 Ja
+- 2 Nein
+
+**`V601` KONFESSION, BEFRAGTE**
+
+- 1 EVANG.OHNE FREIKIRCH
+- 2 EVANG.FREIKIRCHE
+- 3 ROEMISCH-KATHOLISCH
+- 4 AND.CHRISTL.RELIGION
+- 5 AND.NICHT-CHRISTLICH
+- 6 KEINER RELIGIONSGEM.
+
+Tipp: Benutze zunächst `select` um alle benötigten Variablen auszuwählen, dann kodiere die Dummies.
+
+```{r}
+
+
+
+```
+
+
+### Aufgabe $1a_{i}$
+
+*Berechnen Sie (anhand eines log. Regressionsmodells) die Wahrscheinlichkeit für ein aktuelles Gewerkschaftsmitglied (Konfession evangelisch) die SPD zu wählen.* 
+
+```{r, results='asis'}
+
+
+
+
+
+```
+
+
+### Aufgabe $1a_{ii}$
+
+*Berechnen Sie (anhand eines log. Regressionsmodells) die Wahrscheinlichkeit für eine Person mit katholischer Konfession (keine Gewerkschaftsmitgliedschaft) die SPD zu wählen.* 
+
+```{r}
+
+
+
+
+
+```
+
+
+
+### Aufgabe 1b
+
+*Wie fallen die Odds für diese beiden Personen aus?* 
+
+```{r}
+
+
+
+
+```
+
+
+### Aufgabe 1c
+
+*Wie fallen die Odds Ratios bzgl. der Variablen Gewerkschaftsmitgliedschaft und Konfessionszugehörigkeit-evangelisch aus?*
+
+```{r}
+
+
+
+
+
+```
+
+### Visualisierung für Bonuspoints ;)
+
+```{r}
+
+
+
+
+
+```
+
+
+### Aufgabe 1d
+
+*Über welchen Personenkreis kann dieses Modell Aussagen treffen? Denken Sie bei Ihrer Antwort an die Null-Kategorie Ihrer Variablen.*
+
+
+
+

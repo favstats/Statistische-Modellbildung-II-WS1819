@@ -1,0 +1,117 @@
+---
+title: "SM II Abgabe 2"
+author: "Holger Wemmer"
+date: "11.November 2018"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+library(psych)
+
+
+pacman::p_load(tidyverse, haven, texreg, sjmisc, psych, knitr)
+```
+
+## Aufgabe 1
+
+
+_Wozu werden Standardisierungen durchgeführt und wie wird dabei vorgegangen? Erläutern Sie zudem exemplarisch wozu $b^*$ benutzt wird und wie man diesen interpretiert!_
+
+$$b^* = b * \frac{s_x}{s_y}$$
+Standardisierung benötigt man, um einzelne Regressionskoeffizienten in einem multivariaten Modell miteinander vergleichen zu können. Prinzipiell versucht man lediglich festzustellen, welche Variable, bzw. welches b den größeren Einfluss auf Y hat. Das kann man nur in den seltensten Fällen direkt ablesen, da Variablen zum einen meist unterschiedlich Skaliert sind, zum anderen auch unterschiedliche Varianzen aufzeigen.
+Aus diesem Grund standartisiert man Regressionskoeffizienten. Aus einem b wird ein b*. Dies wird allerdings anders interpretiert. Nehmen wir beispielsweiße ein b* von 0,5. Das bedeutet, dass Y um 0,5 Standartabweichungen steigt, wenn X um eine Standardabweichung zunimmt. Es ist an sich also relativ aussageschwach, kann aber nun mit den anderen standardisierten Regressionskoeffizienten vergliechen werden. Hat der eine einen Wert von 0,2, der andere einen von 0,2, so hat der zweite Koeffizient einen doppelt so starken Einfluss auf Y wie der erste.
+
+
+
+## Aufgabe 2
+
+```{r datensatz einladen, include=FALSE}
+library(haven)
+library(dplyr)
+library(ggplot2)
+allbus <- read_sav("~/Dokumente/Master/SM II Aufgaben/data/allbus2014.sav")
+allb_sub <- allbus %>% 
+      select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+           bildung = V86, 
+           geschl  = V81,  
+        einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+        bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+         geschl_rec = ifelse(geschl == 2, 0, 1))
+
+```
+
+
+*Führen Sie eine z-Standardisierung für die Originalaltersvariable (alter_z) und die auf Null gesetzte Altersvariable (alter_0z) sowie für "unsere" Bildungsvariable (0 bis 4). [Daten: ALLBUS 2014]*
+
+
+```{r}
+allb_sub %>%
+  mutate(einkommen_z = scale(einkommen, center = F, scale = T)) %>% 
+  mutate(bildung_z = scale(bildung, center = F, scale = T)) %>% 
+  mutate(alter_z = scale(alter, center = F, scale = T)) %>% 
+  mutate(alter_z0 = scale(alter0, center = F, scale = T))  %>% 
+  describe() %>%
+  select(-vars, -range, -trimmed, -mad,  -skew, -kurtosis,  -se)
+```
+
+
+### Aufgabe 2a
+
+*Vergleichen Sie die Zahlenwerte, Mean und die Standardabweichung von alter$_z$ und alter_0z und erklären Sie Ihre "Beobachtung".*
+
+Mean ist in beiden Fällen zwischen 0 und1. Der Abstand ist deutlich geringer und auch nicht proportional zusammen geschrumpoft. Zwischen Alter und Alter0 sind 18 Jahre, zwischen alter_z und alter_z0 sind 0,04 irgendwas. War die Standardabweichung für beide Altersvariablen noch die Gleiche (muss ja so sein, da die Varianz die selbse ist), so ist die Standardabweichung bei den Z-formatierten Variablen nicht mehr gleich. Die Standartabweichung von alter_z0 ist um 0,18 (sicher nur ein lustiger Zufall) höher als die von alter_z. 
+
+
+```{r}
+
+
+
+```
+
+### Aufgabe 2b
+
+*Führen Sie eine Regression von Einkommen auf alter_0 und bildung (Modell 1) und eine Regression von einkommen_z auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.*
+
+```{r}
+library(texreg)
+
+mod1 <- lm(einkommen ~ alter + bildung, data = allb_sub)
+mod2 <- lm(einkommen_z ~ alter_z + bildung_z, data = allb_sub)
+
+screenreg(list(mod1,mod2))
+
+
+```
+
+
+
+### Aufgabe 2c
+
+_Wie erklären Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Modell 2 das z-transformierte Einkommen als abhängige Variable._
+
+Die  Werte von b sind die unstandardisierten Regressionskoeffizienten. ALso: Steigt X1 um 1 (unter sonst gleichbleibenden Bedingungen), so steigt Y um 0,04. DIese Effekte sind hochsignifikant). Modell 2 wird leider nicht ausgespuckt (findet z-transformierte Variablen nicht), aber man bekommt in der selben Zeile, in der in mod1 die unst. Regressionskoeffizienten stehen, die standardisierten Regressionskoeffizienten. Höchstwahrscheinlich wird das b2* nicht 25 mal höher als b1* sein (wie in mod1). Man wird den Einfluss vergleichen können (s.o.).
+
+
+## Aufgabe 3 
+
+*Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R2-Wert so groß wie nur irgendwie möglich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwünscht).*
+
+*- Einzige Einschränkung: Keine Regression von Y auf Y.*
+
+```{r}
+mod3 <- lm(einkommen ~ alter + bildung + geschl, data = allb_sub)
+
+screenreg(mod3)
+
+```
+
+
+
+
+

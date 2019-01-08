@@ -1,0 +1,441 @@
+---
+title: "SM II: Tutorium - 5. Sitzung"
+subtitle: ""
+author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="https://twitter.com/favstats"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; www.favstats.eu</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-22-11'
+output: 
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      highlightLanguage: r
+    includes:
+      in_header: header.html      
+    countIncrementalSlides: false
+    css: xaringan-themer.css
+---
+
+<style>
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+<style>
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+</style>
+
+
+
+```{r, include = F}
+pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot, car, sjmisc, broom, psych, lm.beta, tidytemplate, stargazer, corrplot)
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F) # Whether to display errors
+
+allbus <- read_spss("../../../data/allbus2014.sav")
+allb_sub <- allbus %>% 
+     # select(V84, V86, V81, V420)  %>% 
+      rename(alter = V84, 
+       bildung = V86, 
+       geschl  = V81,  
+       einkommen  = V420) %>%
+      mutate(alter0 = alter - 18,
+       bildung_rec = ifelse(bildung == 6 | bildung == 7, NA, bildung - 1),
+       geschl_rec = ifelse(geschl == 2, 0, 1)) %>%
+      mutate_all(as.numeric) # alle Werte als numerisch ausgeben
+
+allb_sub <- allb_sub %>%
+  rename(prestige_befragter = V112) 
+         
+mod1 <- lm(prestige_befragter ~ alter0 + bildung_rec, data = allb_sub)
+```
+
+
+## Übersicht
+
+1. Übungsaufgabe 4 in SPSS
+2. Übungsaufgabe 4 in R
+3. Bestimmung des benötigten Stichprobenumfangs
+  
+<br>
+ 
+  
+[Tabelle A4 zum F-Test (Urban/Mayerl, S. 358-359)](http://www.favstats.eu/smii_1819/TabelleA4_FTest_Power.pdf)
+  
+  
+[Multikollinearität Blogpost](http://www.favstats.eu/post/multicol_sim/)
+
+<br>
+  
+[Link zum Datensatz](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/data/allbus2014.sav)
+  
+[Link zur Übungsaufgabe 4 - SPSS](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/04_Sitzung_15.11.2018/03_spss/04ua_vorlage.sps)
+  
+[Link zur Übungsaufgabe 4 - R](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/04_Sitzung_15.11.2018/04_r/03ua_vorlage.Rmd)
+
+
+  
+
+---
+
+#### Aufgabe 1
+
+
+*Erstellen Sie eine Regression von Einkommen auf Bildung, Geschlecht und Alter sowie der Dummyvariablen Zugang zu tertiärer Bildung (bild_tert), die null kodiert ist, wenn der betreffende Befragte einen niedrigeren Schulabschluss als Fachhochschulreife hat und eins, wenn Umgekehrtes der Fall ist. Hinzu kommen die Interaktionsvariablen zwischen Geschlecht und Alter (gesch_alter) sowie zwischen Alter und Zugang zu tertiärer Bildung (alt_tert).*
+
+##### Aufgabe 1a
+
+*Berechnen Sie das Konfidenzintervall für die Variablen bild_tert und Alter mittels der Koeffizienten und interpretieren Sie diese.*
+
+$$KI_{95} = b \pm  t_{n} \times SE_b$$ 
+
+Für $n > 120$ und $95\%$ Signifikanzniveau ist der kritische Wert $t_{krit} = 1.96$ 
+
+Für $n > 120$ und $99\%$ Signifikanzniveau ist der kritische Wert $t_{krit} = 2.58$ 
+
+###### Aufgabe 1b
+
+*Testen Sie das Gesamtmodell auf Linearität.*
+
+---
+
+#### Aufgabe 2
+
+*Was ist unter Multikollinearität zu verstehen, warum ist es ein Problem, wenn diese in einer Modellschätzung vorliegt und wie kann das Vorliegen derselben diagnostiziert werden?*
+
+.eighty[
+
+Tipp: 
+
+VIF Werte über 5 bzw. Toleranz unter 0.2 gelten als grenzwertig.
+
+VIF Werte über 10 bzw. Toleranz unter 0.1 gelten als sehr problematisch.
+
+]
+
+#### Aufgabe 3
+
+_Wie ausgeprägt ist die Multikollinearität im Regressionsmodell von Aufgabe 1? Welche Gründe (inhaltliche) lassen sich für die Multikollinearität identifizieren?_
+
+---
+
+
+#### Aufgabe 4
+
+
+_Bestimmen Sie den minimalen Stichprobenumfang für eine Variablenbeziehung in der Höhe von ca. f2=0.1. Die Variablenbeziehung soll in einem Regressionsmodell mit 20 weiteren Kontrollvariablen mit einer Power von 0.8 und einem Signifikanzniveau von 95% (bzw. Irrtumswahrscheinlichkeit 0.05) getestet werden. Stellen Sie Ihren Denk- /Rechenvorgang dar._
+
+
+Tipp: siehe Urban/Mayerl 2011: 159f.
+
+$$N = \frac{\lambda}{f^2}$$
+
+#### Aufgabe 5
+
+_Welche Form von Fehlschluss wird durch ein niedriges Signifikanzniveau "begünstigt"?_ 
+
+
+
+#### Aufgabe 6
+
+_In welchen Fällen ist es sinnvoll das Signifikanzniveau höher anzusetzen als 95%?_
+
+---
+
+### Übungsaufgabe SPSS
+
+.eighty[Erstellen einer Interaktionsvariablen:]
+
+```{r, eval=F}
+COMPUTE int_alter_gender = alter * gender.
+```
+
+
+.eighty[Testen des Gesamtmodells auf Linearität:]
+
+```{r, eval=F}
+REGRESSION
+  /DEPENDENT demzufriedenheit
+  /METHOD=ENTER alter gender int_alter_gender
+  /SCATTERPLOT=(*ZRESID , *ZPRED).
+```
+
+
+.eighty[(Multi-)Kollinearitätskoeffezienten anzeigen lassen:
+
+Fügen wir zu `/STATISTICS` noch `BCOV` und `TOL` hinzu, so bekommen wir eine Korrelationstabelle für die Koeffizienten und Toleranzwerte bzw. VIF Werte aus.]
+
+```{r, eval=F}
+REGRESSION
+  /STATISTICS COEFF OUTS CI(95) R BCOV TOL
+  /DEPENDENT demzufriedenheit
+  /METHOD=ENTER alter gender int_alter_gender
+```
+
+
+---
+
+### Übungsaufgabe R
+
+Ausgeben der Koeffizienten eines Modells mit `tidy`
+
+```{r, eval=F}
+tidy(mod1) 
+```
+
+```{r, echo=F}
+tidy(mod1) %>% 
+  kable(format = "html")
+```
+
+---
+
+### Übungsaufgabe R
+
+Berechnung von 95% Konfidenzintervallen:
+
+```{r, eval=F}
+tidy(mod1) %>% 
+  mutate(low_se_95 = estimate - 1.96 * std.error) %>% 
+  mutate(high_se_95 = estimate + 1.96 * std.error)
+```
+
+```{r, echo=F}
+tidy(mod1) %>% 
+  mutate(low_se_95 = estimate - 1.96 * std.error) %>% 
+  mutate(high_se_95 = estimate + 1.96 * std.error) %>% 
+  kable(format = "html")
+```
+
+---
+
+### Übungsaufgabe R
+
+Berechnung von 99% Konfidenzintervallen:
+
+```{r, eval=F}
+tidy(mod1)  %>% 
+  mutate(low_se_99 = estimate - 2.58 * std.error) %>% 
+  mutate(high_se_99 = estimate + 2.58 * std.error)
+```
+
+```{r, echo=F}
+tidy(mod1) %>% 
+  mutate(low_se_99 = estimate - 2.58 * std.error) %>% 
+  mutate(high_se_99 = estimate + 2.58 * std.error)  %>% 
+  kable(format = "html")
+```
+
+---
+
+### Übungsaufgabe R
+
+Geschätzte Werte (fitted values) und standardisierte Residuen können wir uns mit `augment` ausgeben:
+
+```{r}
+diag_mod <- augment(mod1)
+```
+Nur zum angucken :)
+
+```{r, eval=F}
+head(diag_mod) %>% 
+  select(.fitted, .std.resid) 
+```
+
+```{r, echo=F}
+head(diag_mod) %>% 
+  select(.fitted, .std.resid)  %>% 
+  kable(format = "html")
+```
+
+---
+
+### Übungsaufgabe R
+
+Testen des Gesamtmodells auf Linearität:
+
+```{r, fig.height=4, fig.width=5}
+diag_mod %>% #Datensatz 
+  plot_scatter(.fitted, .std.resid, #x und y definieren 
+               fit.line = "loess",  #zeige eine loess Kurve
+               show.ci = T,         #zeige das Konfidenzintervall
+               title = "Test auf Linearität",   #Titel der Grafik
+               axis.titles = c("Geschätzte Werte",
+                               "Standardisierte Residuen")) 
+```
+
+---
+
+### Übungsaufgabe R
+
+Testen des aller UVs auf Linearität:
+
+```{r, fig.height=5, fig.width=8}
+plot_model(mod1, type = "slope")
+```
+
+
+---
+
+### Übungsaufgabe R
+
+Testen auf Multikollinearität
+
+VIF - Werte:
+
+```{r}
+vif(mod1)
+```
+
+Toleranzwerte:
+
+```{r}
+(1/vif(mod1)) 
+```
+
+
+---
+
+### Übungsaufgabe R
+
+Testen auf Multikollinearität
+
+Gemeinsam:
+
+```{r, eval=F}
+data.frame(vif = vif(mod1),
+           toleranz = (1/vif(mod1)))
+```
+
+```{r, echo=F}
+data.frame(vif = vif(mod1),
+           toleranz = (1/vif(mod1)))  %>% 
+  kable(format = "html")
+```
+
+---
+
+### Übungsaufgabe R
+
+Eine (nahezu) komplette Regressionsdiagnostik mit `plot_model`:
+
+```{r, eval=F}
+plot_model(mod1, type = "diag")
+```
+
+
+```{r, echo=F, fig.height=5, fig.width=8}
+plot_model(mod1, type = "diag")[[1]]
+```
+
+
+---
+
+### Übungsaufgabe R
+
+Eine (nahezu) komplette Regressionsdiagnostik mit `plot_model`:
+
+```{r, eval=F}
+plot_model(mod1, type = "diag")
+```
+
+
+```{r, echo=F, fig.height=5, fig.width=8}
+plot_model(mod1, type = "diag")[[2]]
+```
+
+---
+
+### Übungsaufgabe R
+
+Eine (nahezu) komplette Regressionsdiagnostik mit `plot_model`:
+
+```{r, eval=F}
+plot_model(mod1, type = "diag")
+```
+
+```{r, echo=F, fig.height=5, fig.width=8}
+plot_model(mod1, type = "diag")[[3]]
+```
+
+---
+
+### Übungsaufgabe R
+
+Eine (nahezu) komplette Regressionsdiagnostik mit `plot_model`:
+
+```{r, eval=F}
+plot_model(mod1, type = "diag")
+```
+
+
+```{r, echo=F, fig.height=5, fig.width=8}
+plot_model(mod1, type = "diag")[[4]]
+```
+
+
+---
+
+### Bestimmung des benötigten Stichprobenumfangs
+
+Die Teststärke ist eine Funktion der drei Faktoren Signifikanzniveau, geschätzte
+Effektstärke und Stichprobenumfang. Deswegen lässt sich der notwendige Stichprobenumfang aus einer vorab festgelegten Teststärke, einem bestimmten Signifikanzniveau und einer erwarteten Effektstärke ableiten (a-priori-Analyse).
+
+Folgende Werte sind gegeben:
+
+- Variablenbeziehung: $f^2 = 0.1$
+
+- Anzahl der Kontrollvariablen: $20$
+
+- Teststärke: $80\%$
+
+- Signifikanzniveau: $95\%$ (Irrtumswahrscheinlichkeit $\alpha = 0.05$)
+
+Gesucht:
+
+- N (Stichprobenumfang)
+
+---
+
+### Bestimmung des benötigten Stichprobenumfangs
+
+Nun ist in einem ersten Schritt den Nonzentralitätsparameter $\lambda$ zu berechnen. 
+Ist dieser berechnet sind sämtliche Größen vorhanden um die umgeformte Gleichung zur Berechnung von *N* auflösen zu können.
+
+Der Nonzentralitätsparameter $\lambda$ ergibt sich aus einer Teststärkentabelle für die Analyse mit Alpha = 0.05, gemäß dem gewählten Signifikanzniveau. Unser **u**, also die Anzahl unabhängiger Modellvariablen, beträgt 21. Somit betrachten wir in der Tetstärkentabelle die Zeile mit u = 21 bzw. 20.
+
+In der entsprechenden Zeile der Teststärkentabelle wird nun der erste Wert gesucht, bzw. der kleinste Wert, der die geforderte Teststärke von $80\% (=0.8)$ erstmalig überschreitet. Ist dieser gefunden, kann die notwendige Stichprobengröße abgeleitet werden, aus der umgeformten Gleichung:
+ 
+$$N = \frac{\lambda}{f^2}$$
+
+
+Für den Nonzentralitätsparameter $\lambda$ wird auf diese Weise ein Wert von 24 aus der 
+Teststärkentabelle ermittelt (u = 20).
+
+---
+
+### Bestimmung des benötigten Stichprobenumfangs
+
+Somit ergibt sich unter den angeführten
+Randbedingungen eine optimale Stichprobengröße von 240, um mit einer
+Wahrscheinlichkeit von 80 Prozent einen signifikanten Effekt zu entdecken.
+
+$$N = \frac{24}{0.1} = 240$$

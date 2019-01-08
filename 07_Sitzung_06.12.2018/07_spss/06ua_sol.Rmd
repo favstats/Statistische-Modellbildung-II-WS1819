@@ -1,0 +1,181 @@
+---
+title: "Musterlösung: Übungsaufgabe 6"
+author: "Statistische Modellbildung II"
+date: "12. Dezember 2018"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+
+```{r chunks, include=FALSE}
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(echo = T # Whether to display code along with its results
+                      , eval = F # Whether to evaluate the code and include its results
+                      , results = "asis" # this at deafult is in end much more efficient
+                      , cache = F # Whether to cache results for future renders (efficient!)
+                      , warning = F # Whether to display errors
+                      , message = F # Whether to display messages
+                      , error = F # maybe turn on
+                      , tidy = F # Whether to reformat code in a tidy way when displaying it
+                      , fig.width = 6 #plot width at 6
+                      , fig.height = 4 #plot height at 4
+                      , fig.align = "center" #plot alignment center
+                      )
+```
+
+
+## Aufgabe 1
+
+*Erstellen Sie zunächst dichotome Variablen für SPD-Wahl bei der letzten Bundestagswahl (z. B. V810), die Gewerkschaftsmitgliedschaft (z. B. V606) und die ev. Konfessionszugehörigkeit (z. B. V601).*
+
+**`V810` ZWEITSTIMME, LETZTE BUNDESTAGSWAHL**
+
+- 1  CDU-CSU
+- 2  SPD
+- 3  FDP
+- 4  DIE GRUENEN
+- 6  DIE LINKE
+- 20 NPD
+- 41 PIRATEN
+- 42 AFD
+- 43 FREIE WAEHLER
+- 90 ANDERE PARTEI
+
+**`V606` MITGLIED IN EINER GEWERKSCHAFT?**
+
+- 1 Ja
+- 2 Nein
+
+**`V601` KONFESSION, BEFRAGTE**
+
+- 1 EVANG.OHNE FREIKIRCH
+- 2 EVANG.FREIKIRCHE
+- 3 ROEMISCH-KATHOLISCH
+- 4 AND.CHRISTL.RELIGION
+- 5 AND.NICHT-CHRISTLICH
+- 6 KEINER RELIGIONSGEM.
+
+Tipp: Benutze zunächst `select` um alle benötigten Variablen auszuwählen, dann kodiere die Dummies.
+
+```{r}
+*Wahlabsicht : V810.
+fre V810.
+recode V810 (2 = 1) (1 = 0) (3 thru 90 = 0) (else = 99) into spd.
+mis val spd (99)
+
+*Gewerkschaft: v606.
+fre v606.
+recode v606 (1 = 1) (2 = 0) (else = 99) into gewerkschaft.
+mis val gewerkschaft (99).
+
+*Konfession: V601.
+fre V601.
+recode V601 (1 = 1) (2 = 1) (3 thru 6 = 0) into evangelisch.
+mis val evangelisch (99).
+
+recode V601 (1 = 0) (3 = 1) (3 thru 6 = 0) into katholisch.
+mis val katholisch (99).
+
+```
+
+
+
+### Aufgabe $1a_{i}$
+
+*Berechnen Sie (anhand eines log. Regressionsmodells) die Wahrscheinlichkeit für ein aktuelles Gewerkschaftsmitglied (Konfession evangelisch) die SPD zu wählen.* 
+
+```{r}
+LOGISTIC REGRESSION VARIABLES spd
+/METHOD=ENTER evangelisch gewerkschaft.
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("tables/log1.htm")
+```
+
+$$\hat z_i = a + b \times X_i$$
+
+```{r, eval=T}
+z1 <- -1.268 + 1 * 0.496 + 1 * 0.365
+```
+
+$$p_i(y=1) = \frac{e^{\hat z_i}}{1 +e^{\hat z_i}} = Wahrscheinlichkeit$$
+
+```{r, eval=T}
+# Berechnen von Wahrscheinlichkeit
+exp(z1) / (1 + exp(z1))
+```
+
+
+Die Wahrscheinlichkeit für ein evangelisches, aktuelles Gewerkschaftsmitglied, die SPD zu wählen liegt bei knapp 40 Prozent.
+
+
+
+### Aufgabe $1a_{ii}$
+
+*Berechnen Sie (anhand eines log. Regressionsmodells) die Wahrscheinlichkeit für eine Person mit katholischer Konfession (keine Gewerkschaftsmitgliedschaft) die SPD zu wählen.* 
+
+```{r}
+LOGISTIC REGRESSION VARIABLES spd
+/METHOD=ENTER katholisch gewerkschaft.
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("tables/log2.htm")
+```
+
+$$\hat z_i = a + b \times X_i$$
+
+```{r, eval=T}
+z2 <- -0.996 + 1 * -0.322 + 0 * 0.311
+```
+
+$$p_i(y=1) = \frac{e^{\hat z_i}}{1 +e^{\hat z_i}} = Wahrscheinlichkeit$$
+
+```{r, eval=T}
+# Berechnen von Wahrscheinlichkeit
+exp(z2) / (1 + exp(z2))
+```
+
+Die Wahrscheinlichkeit für ein katholisches Nicht-Gewerkschaftsmitglied die SPD zu wählen liegt bei 21 Prozent.
+
+### Aufgabe 1b
+
+*Wie fallen die Odds für diese beiden Personen aus?* 
+
+```{r, eval=T}
+# Person 1
+exp(z1)
+
+# Person 2
+exp(z2)
+
+# Kehrwerte weil unter 1: Person 1
+1 / exp(z1)
+
+# Kehrwerte weil unter 1: Person 2
+1 / exp(z2)
+```
+
+Die Odds für eine Person (A), die sowohl evangelisch, als auch aktuell Gewerkschaftsmitglied ist, beträgt: 0.67 Das heißt: Damit ist die Chance, dass diese Person (A) SPD statt einer anderen Partei wählt 0.67 mal höher oder 1.50 mal niedriger.
+
+Die Odds für eine Person (B), die katholisch und aktuell kein Gewerkschaftsmitglied ist, beträgt: 0.27 Das heißt: Damit ist die Chance, dass diese Person (B) SPD statt einer anderen Partei wählt 3,74 mal niedriger.
+
+
+### Aufgabe 1c
+
+*Wie fallen die Odds Ratios bzgl. der Variablen Gewerkschaftsmitgliedschaft und Konfessionszugehörigkeit-evangelisch aus?*
+
+Im Vergleich zu Personen, die nicht aktuell Gewerkschaftsmitglied sind, haben Gewerkschaftsmitglieder eine 1,44 mal höhere Chance die SPD zu wählen.
+
+Im Vergleich zu Personen, die keine evangelische Konfessionsangehörigkeit haben, haben Personen mit evangelischer Zugehörigkeit eine 1,64 mal höhere Chance die SPD zu wählen.
+
+
+### Aufgabe 1d
+
+*Über welchen Personenkreis kann dieses Modell Aussagen treffen? Denken Sie bei Ihrer Antwort an die Null-Kategorie Ihrer Variablen.*
+
+Das Modell kann nur Aussagen über Personen mit evangelischer Konfessionszugehörigkeit und Personen ohne evangelische Konfessionszugehörigkeit machen. Das heißt, es kann —keine— Aussagen über Atheisten, Muslime etc. machen. Es lässt sich auch nichts über die Wahrscheinlichkeit/Chance sagen eine spezielle Partei zu wählen (wie z.B. CDU oder Grüne). Die Dummy Variable ist nur als 1 (SPD Wahl) und 0 (alle anderen Parteien) kodiert. 
+

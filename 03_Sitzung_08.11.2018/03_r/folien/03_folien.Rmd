@@ -1,0 +1,456 @@
+---
+title: "SM II: Tutorium - 3. Sitzung"
+subtitle: ""
+author: '<br>Kontakt:<br><br>Fabio Votta <br><br> <a href="http://github.com/favstats"><i class="fa fa-github fa-fw"></i>&nbsp; favstats</a> <br> <a href="https://twitter.com/favstats"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @favstats</a> <br> <a href="http://www.favstats.eu/"><i class="fa fa-address-card"></i>&nbsp; www.favstats.eu</a><br> <a href="mailto:fabio.votta@gmail.com"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; fabio.votta@gmail.com</a> <br><br><br><br> 2018-08-11'
+output: 
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      highlightLanguage: r
+    includes:
+      in_header: header.html      
+    countIncrementalSlides: false
+    css: xaringan-themer.css
+---
+
+<style>
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+<style>
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+</style>
+
+
+
+```{r, include = F}
+pacman::p_load(tidyverse, knitr, haven, texreg, sjPlot, sjmisc, psych, lm.beta, tidytemplate, stargazer, corrplot)
+```
+
+
+## Übersicht
+
+1. Kurzes Feedback zur Übungsaufgabe 1
+2. Übungsaufgabe 2 in SPSS
+3. Rstudio Cloud
+4. Übungsaufgabe 2 in R
+  
+  
+[Link zum Datensatz](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/data/allbus2014.sav)
+  
+[Link zur Übungsaufgabe 2 - SPSS](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/03_Sitzung_08.11.2018/03_spss/02ua_vorlage.sps)
+  
+[Link zur Übungsaufgabe 2 - R](https://github.com/favstats/Statistische-Modellbildung-II-WS1819/blob/master/03_Sitzung_08.11.2018/03_r/02ua_vorlage.Rmd)
+  
+  
+
+---
+
+## Kurzes Feedback zur Übungsaufgabe 1
+
++ Abgaben generell gut :)
+
++ Für jede Übungsaufgabe werden fünf Abgaben ausgewählt für Feedback
+
++ Übersicht über eure Abgaben bekommt ihr jeweils im Tutorium auf Nachfrage
+
+Nur eine Sache:
+
+*Bitte darauf achten dass sowohl in eurem Dateinamen als auch innerhalb eurer Abgabe euer Name steht!*
+
+
+---
+
+class: center, middle
+
+## Thema der Übungsaufgabe
+
+### Standardisierungen in linearen Regressionen
+
+---
+
+#### Aufgabe 1
+
+.seventyfive[
+
+Wozu werden Standardisierungen durchgeführt und wie wird dabei vorgegangen? Erläutern Sie zudem exemplarisch wozu $b^*$ benutzt wird und wie man diesen interpretiert!
+
+]
+
+#### Aufgabe 2
+
+.seventyfive[
+
+Führen Sie eine z-Standardisierung für die Originalaltersvariable (alter_z) und die auf Null gesetzte Altersvariable (alter_0z) sowie für "unsere" Bildungsvariable (0 bis 4). [Daten: ALLBUS 2014]
+
+]
+
+###### Aufgabe 2a
+
+.seventyfive[
+
+Vergleichen Sie die Zahlenwerte, Mean und die Standardabweichung von alter_z und alter_0z und erklären Sie Ihre "Beobachtung".
+
+]
+
+###### Aufgabe 2b
+
+.seventyfive[
+
+Führen Sie eine Regression von Einkommen auf alter_0 und bildung (Modell 1) und eine Regression von einkommen_z auf alter_0z und bildung_z (Modell 2) durch und vergleichen Sie die b-Koeffizienten.
+
+]
+
+###### Aufgabe 2c
+
+.seventyfive[
+
+Wie erklären Sie die Werte b und $b^*$ in Modell 2? TIPP: Verwenden Sie bei Modell 2 das z-transformierte Einkommen als abhängige Variable.
+
+]
+
+---
+
+### Aufgabe 3 
+
+Erstellen Sie ein multivariates Regressionsmodell mit Y=Einkommen. Versuchen Sie dabei den R2-Wert so groß wie nur irgendwie möglich zu bekommen. Jeder schmutzige Trick der Sozialforschung ist erlaubt (und in diesem Fall erwünscht).
+
+- Einzige Einschränkung: Keine Regression von Y auf Y.
+
+Tipp: Die *"Giftliste"* auf den Seiten 101 - 103 in *Urban, D., & Mayerl, J. (2018). Angewandte Regressionsanalyse: Theorie, Technik und Praxis. Springer VS.*
+
+---
+
+### Übungsaufgabe - SPSS
+
+Mit der folgenden Syntax werden z-standardisierte Variablen kreiert:
+
+```{r, eval = F}
+DESCRIPTIVES VAR = var1 var2 var3
+/SAVE.
+```
+
+Die z-standardisierten Variablen befinden sich dann im Datensatz mit den folgenden Namen:
+
++ Zvar1
++ Zvar2
++ Zvar3
+
+Mit `RENAME VARIABLES` können wir die Variablen auch umbennen:
+
+```{r, eval = F}
+RENAME VARIABLES (Zvar1 Zvar2 Zvar3 = var1_z var2_z var3_z).
+
+```
+
+
+---
+
+### Übungsaufgabe - SPSS
+
+Korrelationsmatrix mit den Variablen 1 bis 12 erstellen:
+
+```{r, eval = F}
+CORRELATIONS
+  /VARIABLES = var1 var2 var3 var4 var5 var6 
+               var7 var8 var9 var10 var11 var12         
+  /PRINT=TWOTAIL NOSIG
+  /MISSING=PAIRWISE.
+```
+
+---
+
+### Rstudio Cloud
+
++ Online Plattform
++ Alles vorinstalliert (z.B. Packages)
++ Möglichkeit euch direkt zu helfen
+
+
+[Einladelink zum SM II Workspace](https://rstudio.cloud/spaces/6153/join?access_code=mufZJ39bPJEB7lUGE4sqTOYmtJPWDK34PSg%2BRdXw)
+
+
+![](images/CpfLvmF.png)
+
+---
+
+### Übungsaufgabe - R
+
+```{r, include = F}
+set.seed(111)
+einkommen <- abs(round(rnorm(1200,2700,1400)))
+alter <- round(runif(1200,18,84))
+bildung <- round(abs(einkommen*rnorm(1200,5,2))/ 10000) 
+
+
+dataset <- tibble(alter, einkommen, bildung)
+```
+
+
+Mit `scale` können wir unsere Variablen z-standardisieren, mittelwertzentrieren, oder beides:
+
+Z-Standardisieren:
+
+```{r, eval=F}
+scale(variable, center = FALSE, scale = TRUE)
+```
+
+Mittelwertzentrieren:
+
+```{r, eval=F}
+scale(variable, center = TRUE, scale = FALSE)
+```
+
+Z-Standardisieren und Mittelwertzentrieren:
+
+```{r, eval=F}
+scale(variable, center = TRUE, scale = TRUE)
+```
+
+Letzteres ist die Standardeinstellung!
+
+---
+
+### Übungsaufgabe - R
+
+Mit `scale` können wir unsere Variablen z-standardisieren, mittelwertzentrieren, oder beides:
+
+```{r, eval=F}
+dataset %>%
+  select(alter) %>% # nur Alter auswählen als Vegleich
+  mutate(alter_z = scale(alter, center = F, scale = T)) %>% 
+  mutate(alter_mw = scale(alter, center = T, scale = F)) %>% 
+  mutate(alter_z_mw = scale(alter, center = T, scale = T)) %>% 
+  mutate(alter_z_mw2 = scale(alter))
+```
+
+
+```{r, echo=F}
+dataset %>%
+  select(alter) %>% # nur Alter auswählen als Vegleich
+  mutate(alter_z = scale(alter, center = F, scale = T)) %>% 
+  mutate(alter_mw = scale(alter, center = T, scale = F)) %>% 
+  mutate(alter_z_mw = scale(alter, center = T, scale = T)) %>% 
+  mutate(alter_z_mw2 = scale(alter)) %>% 
+  head() %>% 
+  kable(format = "html")
+```
+
+---
+
+### Übungsaufgabe - R
+
+Für die Übungsaufgabe brauchen wir allerdings nur die z-Standardisierung:
+
+```{r, eval=F}
+dataset %>%
+  mutate(alter_z = scale(alter, center = F, scale = T)) 
+```
+
+```{r, echo=F}
+dataset %>%
+  mutate(alter_z = scale(alter, center = F, scale = T)) %>% 
+  head() %>% 
+  kable(format = "html")
+```
+
+---
+
+### Übungsaufgabe - R
+
+Mit `describe()` aus dem `psych` package können wir uns deskriptive Statistiken für einen Datensatz ausgeben lassen:
+
+```{r}
+dataset %>%
+  describe()
+```
+
+
+---
+
+### Übungsaufgabe - R
+
+`describe` gibt uns die folgenden Werte:
+
++ n
++ mean
++ sd
++ median
++ trimmed
++ mad
++ min
++ max
++ range
++ skew
++ kurtosis
++ se
+
+Das alles brauchen wir allerdings nicht. Daher können wir diese Werte rausfiltern
+
+---
+
+### Übungsaufgabe - R
+
+Mit `select` und minus vor einer Variable entfernen wir Variablen die wir nicht wollen:
+
+
+```{r}
+dataset %>%
+  describe() %>%
+  select(-vars, -range, -trimmed, -mad,  -skew, -kurtosis,  -se) 
+```
+
+---
+
+### Übungsaufgabe - R
+
+Mit `kable` können wir das ganze noch ein bisschen hübscher aussehen lassen:
+
+```{r, eval=F}
+dataset %>%
+  describe() %>%
+  select(-vars, -range, -trimmed, -mad,  -skew, -kurtosis,  -se) %>% 
+  kable()
+```
+
+```{r, echo=F}
+dataset %>%
+  describe() %>%
+  select(-vars, -range, -trimmed, -mad,  -skew, -kurtosis,  -se) %>% 
+  kable(format = "html")
+```
+
+
+---
+
+### Übungsaufgabe - R
+
+
+```{r, echo=F}
+dataset <- dataset %>%
+  mutate(alter_z = scale(alter, center = F, scale = T))  %>%
+  mutate(bildung_z = scale(bildung, center = F, scale = T))  %>%
+  mutate(einkommen_z = scale(einkommen, center = F, scale = T)) 
+```
+
+
+```{r, results="asis", eval = F}
+mod1 <- lm(einkommen ~ alter + bildung, data = dataset)
+mod2 <- lm(einkommen_z ~ alter_z + bildung_z, data = dataset)
+
+htmlreg(list(mod1, mod2))
+```
+
+```{r, results="asis", echo=F}
+mod1 <- lm(einkommen ~ alter + bildung, data = dataset)
+mod2 <- lm(einkommen_z ~ alter_z + bildung_z, data = dataset)
+
+htmlreg(list(mod1, mod2),
+          # better for markdown
+          doctype = FALSE,
+          html.tag = FALSE,
+          head.tag = FALSE, single.row = T)
+```
+
+
+---
+
+<!-- ### Übungsaufgabe - R -->
+
+<!-- ```{r, results="asis", eval = F} -->
+<!-- mod1 <- lm(einkommen ~ alter + bildung, data = dataset) -->
+
+
+<!-- tbl_std(mod1) -->
+<!-- ``` -->
+
+<!-- ```{r, results="asis", echo=F} -->
+<!-- mod1 <- lm(einkommen ~ alter + bildung, data = dataset) -->
+
+
+<!-- tbl_std(mod1, type = "html", single.row = T,  -->
+<!--         keep.stat = c("n", "adj.rsq", "rsq"),  -->
+<!--         model.numbers = FALSE,  -->
+<!--         dep.var.labels.include = FALSE,  -->
+<!--           dep.var.caption  = "Regression Model")  -->
+
+<!-- ``` -->
+
+```{r, include=F}
+allbus <- read_spss("../allbus2014.sav")
+
+allb_r <- allbus %>%
+  select(V84, V86, V81, V420, V98, V118, V269, V103, V7, V13, V14,
+       V16, V20, V21, V22, V25, V30,V31, V494, V9, V209, V279,
+       V71, V711, V216, V215, V495, V513, V514, V377) %>%
+  rename(alter = V84,
+         bildung = V86,
+         geschl = V81,
+         einkommen = V420,
+         arbeitsstd = V118,
+         keineberufsausbildung = V98,
+         beruf = V103,
+         westost = V7,
+         internet = V14, 
+         computer = V16,
+         essen = V20,
+         besuchfreunde = V21, 
+         besuchfamilie = V22, 
+         kunst = V25,
+         theater = V30,
+         museum = V31, 
+         haushaltseinkommen = V494, 
+         wirtschaftslage = V9,
+         fernsehenmin = V71,
+         dauerbildung = V711, 
+         demzufr = V216,
+         linksrechts = V215,
+         prokopfeink = V495 ,
+         krankengeldhh = V513,
+         elterngeldhh = V514,
+         gebd = V377) %>%
+  na.omit() %>%
+  mutate(alter0 = alter -18,
+          alter0quad = alter0*alter0,
+          bildung_rec = ifelse(bildung == 6 | bildung == 7,0, bildung -1),
+          geschl_rec = ifelse(geschl == 2,0,1),
+          ganztags = ifelse(beruf == 1,1,0),
+          halbtags = ifelse(beruf == 2,1,0),
+          west = ifelse(westost == 1,1,0),
+          immigrant = ifelse(gebd == 2,1,0))
+
+dataset <- allb_r
+```
+
+
+### Übungsaufgabe - R
+
+```{r, fig.width=7, fig.height=5}
+cor_matrix <- dataset %>% 
+  select(einkommen, arbeitsstd, immigrant, ganztags, haushaltseinkommen, wirtschaftslage) %>% 
+  cor()
+
+corrplot(cor_matrix, type = "lower", order = "hclust", tl.srt = 45)
+```
+
