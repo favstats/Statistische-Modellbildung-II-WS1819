@@ -1,0 +1,104 @@
+---
+title: "Übungsaufgabe 9"
+author: "Fabio Votta"
+date: "13. Dezember 2018"
+output: html_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, margins, knitr, labelled, broom, BaylorEdPsych, lmtest, tidytemplate)
+```
+
+Benutzen Sie den ALLBUS 2008 Datensatz
+
+```{r datensatz einladen, include=FALSE, eval = T}
+allbus <- read_spss("../../data/allbus2014.sav")
+```
+
+**V71	VERTRAUEN:** GESUNDHEITSWESEN	
+
+**V72	VERTRAUEN:** BUNDESVERFASSUNGSGERICHT	
+
+**V73	VERTRAUEN:** BUNDESTAG		
+
+**V74	VERTRAUEN:** STADT-,GEMEINDEVERWALTUNG		
+
+**V75	VERTRAUEN:** JUSTIZ		
+
+**V76	VERTRAuEN:** FERNSEHEN		
+
+**V77	VERTRAUEN:** ZEITUNGSWESEN		
+
+**V78	VERTRAUEN:** HOCHSCHULEN,UNIVERSITAETEN		
+
+**V79	VERTRAUEN:** BUNDESREGIERUNG		
+
+**V80	VERTRAUEN:** POLIZEI
+
+**V81	VERTRAUEN:** POLITISCHE PARTEIEN		
+
+**V82	VERTRAUEN:** KOMMISSION DER EU		
+
+**V83	VERTRAUEN:** EUROPAEISCHES PARLAMENT
+
+## Aufgabe 1
+
+*Berechnen Sie eine PCA (Oblimin Rotation) mit den Variablen v71 - v83.*
+
+```{r results = "markup"}
+
+
+
+```
+
+### Aufgabe 1a
+
+*Welche Faktoren/Dimensionen können Sie identifizieren und wie würden Sie diese inhaltlich benennen?*
+
+
+### Aufgabe 1b
+
+*Beurteilen Sie alle Variablen hinsichtlich Ihrer Passung auf die identifizierten Faktoren/Dimensionen. Berücksichtigen Sie dabei Konvergenz- und Diskriminanzvalidität, inhaltliche Aspekte als auch Kommunalitäten.*
+
+
+
+## Aufgabe 2
+
+*Berechnen Sie evtl. eine zweite PCA (Oblimin Rotation) nur mit den geeigneten Variablen.*
+
+```{r results = "markup"}
+
+
+
+```
+
+## Aufgabe 3
+
+*Berechnen Sie eine zweite/dritte PCA (Varimax Rotation) mit den gleichen Variablen aus Aufgabe 2 oder 3.*
+
+
+```{r results = "markup"}
+
+
+
+
+
+```
+
+### Aufgabe 3a
+
+*Welche Unterschiede können Sie erkennen?*
+
+
+### Aufgabe 3b
+
+
+*Für welche Rotationsmethode würden Sie sich entscheiden und wieso?*

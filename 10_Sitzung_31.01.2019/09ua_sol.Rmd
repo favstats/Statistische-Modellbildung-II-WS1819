@@ -1,0 +1,137 @@
+---
+title: "Übungsaufgabe 9"
+author: "Fabio Votta"
+date: "31. Januar 2019"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, margins, knitr, labelled, broom, BaylorEdPsych, psych, GPArotation, tidytemplate)
+
+```
+
+
+Benutzen Sie den ALLBUS 2008 Datensatz
+
+```{r datensatz einladen, include=FALSE, eval = T}
+allbus <- read_spss("../data/ALLBUS_2008.sav")
+```
+
+**V71	VERTRAUEN:** GESUNDHEITSWESEN	
+
+**V72	VERTRAUEN:** BUNDESVERFASSUNGSGERICHT	
+
+**V73	VERTRAUEN:** BUNDESTAG		
+
+**V74	VERTRAUEN:** STADT-,GEMEINDEVERWALTUNG		
+
+**V75	VERTRAUEN:** JUSTIZ		
+
+**V76	VERTRAuEN:** FERNSEHEN		
+
+**V77	VERTRAUEN:** ZEITUNGSWESEN		
+
+**V78	VERTRAUEN:** HOCHSCHULEN,UNIVERSITAETEN		
+
+**V79	VERTRAUEN:** BUNDESREGIERUNG		
+
+**V80	VERTRAUEN:** POLIZEI
+
+**V81	VERTRAUEN:** POLITISCHE PARTEIEN		
+
+**V82	VERTRAUEN:** KOMMISSION DER EU		
+
+**V83	VERTRAUEN:** EUROPAEISCHES PARLAMENT
+
+## Aufgabe 1
+
+*Berechnen Sie eine PCA (Oblimin Rotation) mit den Variablen v71 - v83.*
+
+```{r results = "markup"}
+pca_data <- allbus %>% 
+  select(V71:V83)
+
+obl_pca <- pca_data %>% 
+  pca(rotate = "oblimin", 
+      nfactors = 3)
+
+obl_pca
+```
+
+### Aufgabe 1a
+
+*Welche Faktoren/Dimensionen können Sie identifizieren und wie würden Sie diese inhaltlich benennen?*
+
+Es zeigen sich drei mögliche Dimensionen: Vertrauen in politische Institutionen (Faktor 1), Vertrauen in Gesetzordnunginstitutionen (Faktor 2) und Vertrauen in den Medien (Faktor 3).
+
+### Aufgabe 1b
+
+*Beurteilen Sie alle Variablen hinsichtlich Ihrer Passung auf die identifizierten Faktoren/Dimensionen. Berücksichtigen Sie dabei Konvergenz- und Diskriminanzvalidität, inhaltliche Aspekte als auch Kommunalitäten.*
+
+V71 und V78 passen zu keinem Faktor. Die Kommunalitäten sind klein (0.25 und 0,32). V73 und V79 laden teilweise auf andere Faktoren und führen dazu, dass keine Diskriminanzvalidität hergestellt werden kann
+
+
+
+
+
+
+## Aufgabe 2
+
+*Berechnen Sie evtl. eine zweite PCA (Oblimin Rotation) nur mit den geeigneten Variablen.*
+
+```{r}
+sjp.pca(pca_data, nmbr.fctr = 3,
+  rotation = "oblimin",  # Wähle die Rotation (ansonsten: "varimax")
+  plot.eigen = T, type = "tile")  # Plot um die Eigenvalues anzuzeigen
+
+
+pca_data %>% 
+  select(-V71, -V73, -V78, -V79) %>% 
+  sjp.pca(rotation = "oblimin",  # Wähle die Rotation (ansonsten: "varimax")
+  type = "tile")  # Plot um die Eigenvalues anzuzeigen
+```
+
+## Aufgabe 3
+
+*Berechnen Sie eine zweite/dritte PCA (Varimax Rotation) mit den gleichen Variablen aus Aufgabe 2 oder 3.*
+
+
+```{r results = "markup"}
+var_pca <- pca_data %>% 
+  pca(rotate = "varimax")
+
+var_pca
+
+sjp.pca(pca_data, 
+  rotation = "varimax",  # W?hle die Rotation (ansonsten: "varimax")
+  type = "tile")  # Plot um die Eigenvalues anzuzeigen
+
+
+trust_var_pca <- allbus %>% 
+  select(V73, V79, V81, V82, V83) %>% 
+  pca(rotate = "varimax")
+
+trust_var_pca
+```
+
+### Aufgabe 3a
+
+*Welche Unterschiede können Sie erkennen?*
+
+Die Faktorladungen bleiben relativ stabil. Eine Varimax Rotation führt hier nicht zu anderen Schlussfolgerungen als die Oblimin Rotation.
+
+
+### Aufgabe 3b
+
+
+*Für welche Rotationsmethode würden Sie sich entscheiden und wieso?*
+
+Varimax nimmt keine Korrelation zwischen den Faktoren an. In den Sozialwissenschaften kann man allerdings immer davon ausgehen, dass die Konstrukte in gewisser Weise miteinander korrelieren. Daher ist eine Oblimin Rotation (welche Korrelation zwischen den Faktoren zulässt) einer Varimax Rotation vorzuziehen.

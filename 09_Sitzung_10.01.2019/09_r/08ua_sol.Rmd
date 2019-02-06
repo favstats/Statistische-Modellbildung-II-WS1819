@@ -1,0 +1,160 @@
+---
+title: "Übungsaufgabe 8"
+author: "Fabio Votta"
+date: "10.Januar 2019"
+output: pdf_document
+---
+
+```{r packages and functions, include=FALSE, echo=F}
+#install.packages("pacman") #muss einmal installiert werden
+#install.packages("devtools") #muss einmal installiert werden
+#devtools::install_github("systats/binoculaR") # zum Datensatz inspizieren :)
+#devtools::install_github("favstats/tidytemplate") # hilfreiche Funktionen
+
+#Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors or warnings
+                      
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, margins, knitr, labelled, broom, BaylorEdPsych, lmtest, tidytemplate, lmerTest)
+```
+
+Benutzen Sie den esse03_mod.sav Datensatz. Benutzen Sie als Gruppierungsvariable „Länder“.
+
+```{r datensatz einladen, include=FALSE, eval = T}
+ess <- read_spss("../../data/esse03_mod.sav")
+
+ess <- ess %>% 
+  select(Länder, stflife, Erwerbsstatus) %>% 
+  mutate(Länder = to_label(Länder)) %>% 
+  na.omit()
+
+#binoculaR::binoculaR(ess)
+```
+
+## Aufgabe 1
+
+*Berechnen Sie das Nullmodell (Modell0) für die AV: stflife (allgemeine Lebenszufriedenheit).*
+
+
+```{r, results='asis'}
+
+mod0 <- lmer(stflife ~ 1 + (1 | Länder), data = ess)
+
+texreg(mod0)
+
+# as.data.frame(VarCorr(mod0))
+# 
+# 1.009908 / sqrt(1343)
+# 
+# car::Anova(mod1)
+# 
+# summary(mod0)
+```
+
+
+### Aufgabe 1a
+
+*Berechnen Sie den ICC anhand des Nullmodells.* 
+
+```{r}
+sjstats::icc(mod0)
+
+
+```
+
+
+
+### Aufgabe 1b
+
+*Welche Aussage lässt sich auf Grundlage des Nullmodells treffen?* 
+
+19,85% der Varianz von Lebenstzufriedenheit liegt auf Länderebene (ICC = 0,1985). Da mehr als 10% der Varianz auf der 2. Ebene liegen kann ein Multilevel-Modell gerechtfertigt werden.
+
+
+```{r}
+plot_model(mod0, type = "re", sort.est = T, show.values = T, show.p = T, value.offset = 0.4)
+```
+
+
+## Aufgabe 2
+
+*Berechnen Sie Modell 1 mit der UV: Erwerbsstatus (0=erwerbstätig; 1=arbeitslos)*
+
+```{r, results='asis'}
+
+mod1 <- lme4::lmer(stflife ~ Erwerbsstatus + (1 | Länder), data = ess)
+
+texreg::texreg(mod1)
+
+
+```
+
+```{r}
+summary(mod1)
+```
+
+
+## Aufgabe 2a
+
+*Interpretieren Sie den Koeffizienten für Erwerbsstatus inhaltlich (als Fixed-Effekt).*
+
+Für einen nicht erwerbstätigen Befragten nimmt die Lebenszufriedenheit eines Befragten um 1,34 Skalenpunkte ab im Vergleich zu einem erwerbstätigen Befragten (b = 1.34, SE = 0.05).
+
+## Aufgabe 2b
+
+*Führen Sie einen Likelihood-Ratio-Test (LRT) zwischen Modell0 und Modell1 durch (Achten Sie drauf, dass für den LRT die ML-Schätzung und nicht die REML gewählt werden muss).*
+
+```{r}
+anova(mod1, mod0)
+```
+
+## Aufgabe 2c
+
+*Wie lautet Ihre Schlussfolgerung für Modell 1?*
+
+Der signifikant LRT zeigt, dass das Modell 1 eine bessere Passung hat ($\chi^2$ = 679.39, p < 0.001).
+
+
+## Aufgabe 3
+
+*Lassen Sie in Modell 2 (zusätzlich) den Slope von Erwerbsstatus über die Länder variieren (Random setzen).*
+
+```{r, results='asis'}
+
+mod2 <- lme4::lmer(stflife ~ Erwerbsstatus + (Erwerbsstatus | Länder), data = ess)
+
+texreg::texreg(mod2)
+```
+
+```{r}
+
+plot_model(mod2, type = "std", sort.est = T, show.values = T, show.p = T)
+
+plot_model(mod2, terms = "Erwerbsstatus", type = "pred", sort.est = T, show.values = T, show.p = T)
+
+```
+
+
+### Aufgabe 3a
+
+*Führen Sie einen Likelihood-Ratio-Test zwischen Modell 1 und Modell 2 durch.*
+
+```{r}
+anova(mod2, mod1)
+```
+
+Der signifikant LRT zeigt, dass das Modell 2 eine bessere Passung hat ($\chi^2$ = 42.075, p < 0.001).
+
+
+
+### Aufgabe 3b
+
+*Interpretieren Sie den Random Slope von Erwerbsstatus inhaltlich (als Random Effekt).*
+
+```{r}
+plot_model(mod2, type = "re", sort.est = T, show.values = T, show.p = T, value.offset = 0.4)
+
+
+summary(mod2)
+
+```
+

@@ -1,0 +1,140 @@
+---
+title: "Tipps für Übungaufgabe 8"
+author: "Fabio Votta"
+date: "10 Januar 2019"
+output:
+  rmdformats::html_clean:
+    highlight: kate
+---
+
+```{r, include = F}
+
+pacman::p_load(tidyverse, knitr, htmltools)
+
+```
+
+### Abhängige Variable: Ablehnung von Migranten außerhalb Europas
+
+*- impcntr = Allow many/few immigrants from poorer countries outside Europe*
+
+Multilevel-Modelle lassen sich in R mit Hilfe des `MIXED` Befehl sehr einfach spezifizieren. Zunächst testen wir ein Nullmodell auf folgende Art und Weise.
+
+```{r,eval = F}
+MIXED impcntr
+  /METHOD=REML
+  /random=intercept | subject(Länder). 
+```
+
+Direkt nach dem `MIXED` Befehl spezifizieren wir unsere abhängige Variable `impcntr`. Als nächstes spezifizieren wir das Modell mit einer REML Schätzung (wird benötigt zur Interpretation der Koeffizienten.) Das einzig wirklich neue ist dieser Part `/random=intercept | subject(Länder)`. Hier wird der *random* Part der Gleichung spezifiziert. Hier wird der *random intercept*  bzw. der Kontext über den unser Modell variieren soll festgelegt. Dieser Part ist demnach natürlich absolut wichtig um ein Multilevel-Modell zu schätzen, ohne Kontext (Länder, Zeit etc.) kein Mehrebenenmodell!
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m1.htm")
+```
+
+
+Die Werte für `AIC` and `BIC` sind Gütemaße. Umso kleiner der Wert, desto besser passt das Modell auf die Daten.
+
+Angezeigt wird natürlich nur der Intercept, da wir keine UV spezifiziert haben. Unter `Konstanter Term [Subjekt = Länder]` wird die Varianz des random intercepts gezeigt (Level 2 oder Zwischen-Gruppen Varianz) und unter `Residuum` findet sich die Varianz des Level 1 Fehlers (oder In-Group Varianz).
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m2.htm")
+```
+
+Wir können nun den Intraklassenkoeffizient per Hand ausrechnen:
+
+$$ICC = \frac{Varianz_{L2}}{Varianz_{L2}+Varianz_{L1}} = \frac{0.13}{0.13+0.75} = 0.1465$$
+
+
+Der ICC sagt aus, dass 14.66% der Varianz von Ablehnung von Migranten außerhalb Europas auf Länderebene liegt. Dadurch übeschreitet diese die Multilevel-Daumenregel von mindestens 10% Varianz auf der 2. Ebene.
+
+## Nun fügen wir eine x-Variable hinzu: Links-Rechts Skala
+
+*- lrscale = Placement on left right scale*
+
+
+```{r eval=F}
+
+MIXED stflife with Erwerbsstatus
+  /fixed=Erwerbsstatus | sstype(3)
+  /print= solution
+  /method=REML
+  /random=intercept | subject(Länder).
+
+```
+
+Im `\fixed` Part der Syntax spezifizieren wir zusätzlich noch unsere unabhängige Variable.
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m3.htm")
+```
+
+*Wenn die beiden Modelle aufeinander aufbauen, dann vergleicht ein `Likelihood Ratio Test` die beiden Modelle. Weichen die Devianzwerte signifkant voneinander ab, dann kann das komplexere Modell angenommen werden.*
+
+> **ACHTUNG:** Der Modellvergleich muss immer mit einer ML Schätzung stattfinden. Um die Koeffizienten zu interpretieren wird ein REML Modell geschätzt.
+
+```{r, eval= F}
+*Nullmodell ML - Schätzung.
+MIXED stflife
+  /METHOD=ML
+  /random=intercept | subject(Länder). 
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m4.htm")
+```
+
+```{r, eval= F}
+*Modell 1 ML - Schätzung.
+MIXED stflife with Erwerbsstatus
+  /fixed=Erwerbsstatus | sstype(3)
+  /print= solution
+  /method=ML
+  /random=intercept | subject(Länder).
+```
+
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m5.htm")
+
+```
+
+$$ 50456,279004 - 44413,510141 = 6042.769 > 3.84 (df = 1) $$
+
+Die Ergebnisse des LRT zeigen, dass die Devianz im komplexeren Modell signifikant von der im Nullmodell abweicht, damit kann Modell 1 angenommen werden.
+
+
+
+## Random Slope Modell
+
+*Im nächsten Schritt können wir noch die unabhängige Variable `lrscale` random setzen und über die Länder variieren lassen.*
+
+Kovarianz zwischen Länder wird zusätzlich geschätzt mit Hilfe des folgenden Befehls: `covtype(UNR)`.
+
+```{r, eval= F}
+MIXED impcntr with lrscale
+  /fixed=lrscale | sstype(3)
+  /method=REML
+  /print=solution
+  /random=intercept lrscale | subject(Länder) covtype(UNR).
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m6.htm")
+
+```
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m8.htm")
+```
+
+$$ 44413,510141 - 44393,967068 = 19.54307 > 3.84 (df = 1) $$
+
+In der Tat erhalten wir durch spezifizieren eines random slope Modells einen besseren Fit. Damit können wir Modell 2 annehmen.
+
+```{r, echo=FALSE, eval=T}
+htmltools::includeHTML("D:/Projects/git_proj/Statistische-Modellbildung-II/11.Sitzung_17.01.2018/tables/m7.htm")
+```
+
+
+Zusätzlich zu den bekannten Gütemessungen im unteren Teil der Tabelle befindet sich jetzt noch die Varianz des `random slopes` so wie die Kovarianz zwischen dem Intercept und dem random slope. Letzteres zeigt uns an, dass es einen negativen Zusammenhang gibt zwischen den random intercepts und der Links-Rechts Skala (r = -0.65). Diese Korrelation bedeutet, dass umso höher die *group mean* Ablehnung in einem Land ist, desto rechter sind die Menschen. Das macht inhaltlich auf jedenfall Sinn.
+

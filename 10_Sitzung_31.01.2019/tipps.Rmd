@@ -1,0 +1,153 @@
+---
+title: "Tipps für Übungaufgabe 12"
+author: "Fabio Votta"
+date: "31 Januar 2018"
+output: html_document
+---
+
+```{r chunks, include=FALSE}
+# Default Options - kann bei Gebrauch geändert werden
+knitr::opts_chunk$set(
+  echo = T # Whether to display code along with its results
+  , eval = T # Whether to evaluate the code and include its results
+  , results = "asis" # this at deafult is in end much more efficient
+  , cache = F # Whether to cache results for future renders (efficient!)
+  , warning = F # Whether to display errors
+  , message = F # Whether to display messages
+  , error = F # maybe turn on
+  , tidy = F # Whether to reformat code in a tidy way when displaying it
+  , fig.width = 10 # plot width at 6
+  , fig.height = 8 # plot height at 4
+  , fig.align = "center" # plot alignment center
+)
+
+options(xtable.comment = FALSE, scipen = 9999)
+
+```
+
+
+
+### Packages einladen
+
+```{r packages and functions, include=FALSE, echo=F}
+#############
+# NEU NEU NEU#
+#############
+
+# install.packages("pacman")
+# pacman::p_install_gh("favstats/favstats")
+
+pacman::p_load(tidyverse, haven, sjPlot, sjmisc, texreg, car, psych, knitr, labelled, broom, magrittr, GPArotation)
+
+# Hilfsfunktionen einladen
+#source("functions.R")
+```
+
+### Datensatz einladen
+
+```{r}
+allbus2008 <- read_spss("allbus2008.sav")
+```
+
+**AUFGABE: Faktoranalyse mit religiösen und übernatürlichen Überzeugungen**
+
+*V702*	KIRCHGANGSHAEUFIGKEIT, MUTTER		
+
+*V703*	KIRCHGANGSHAEUFIGKEIT, VATER		
+
+*V704*	KIRCHGANGSHAEUFIGKEIT, BEFR. ALS KIND		
+
+*V705*	WIE OFT BETEN SIE? <11ER SKALA>		
+
+*V706*	HAEUFIGKEIT VON KIRCHL.AKTIVITAETEN,BEFR		
+
+*V707*	RELIGIOESER GEGENSTAND IN HAUSHALT?		
+
+*V708*	HAEUFIGKEIT: WALLFAHRTEN		
+
+*V709*	EINSCHAETZUNG EIGENER RELIGIOSITAET		
+
+*V710*	RELIGIOESER ODER SPIRITUELLER MENSCH?		
+
+*V711*	WAHRHEITSGEHALT IN RELIGIONEN
+
+*V712*	RELIGION HILFT GLUECK + FRIEDEN FINDEN		
+
+*V713*	RELIGION HILFT FREUNDSCHAFTEN SCHLIESSEN		
+
+*V714*	RELIGION HILFT TROST ZU FINDEN		
+
+*V715*	RELIGION HILFT RICHTIGEN LEUTEN BEGEGNEN		
+
+*V716*	BINDUNG ZUR RELIGION AN LEBENSWENDEPUNKT		
+
+*V717*	GLUECKSBRINGER BRINGEN MANCHMAL GLUECK		
+
+*V718*	WAHRSAGER KOENNEN ZUKUNFT VORAUSSEHEN		
+
+*V719*	WUNDERHEILER HABEN UEBERNATUERL. KRAEFTE		
+
+*V720*	HOROSKOP HAT EINFLUSS AUF LEBENSVERLAUF
+
+
+### Erste Herangehensweise
+
+Wir benutzen das Package `psych` um eine PCA durchzuführen. Dazu wählen wir zunächst die relevanten Variablen mit `select` aus und pipen diese dann in den `pca()` Befehl. Da alle gewünschten Variablen nebeneinander stehen müssen wir diese nicht einzeln spezifizieren sondern können diese mit einem *`:`* verbinden.
+
+```{r results = "markup"}
+obl_pca <- allbus2008 %>% 
+  select(V702:V720) %>% 
+  pca(rotate = "oblimin")
+
+obl_pca
+```
+
+`PC1` zeigt hierbei die extrahierte Dimension. `h2` zeigt die *Kommunalitäten* und `u2` zeigt die *Uniqueness*, was einfach nur *1 - Kommunalitäten* ist.
+
+In dem `obl_pca` Objekt befinden sich jetzt allerlei Variablen. Beispielsweise können wir uns die Eigenvalues mit folgenden Befehl zeigen lassen:
+
+```{r}
+plot(obl_pca$values)
+```
+
+Das zeigt uns das wir eigentlich vier Faktoren extrahieren sollten.
+
+Dies kann folgenderweise getan werden:
+
+```{r results = "markup"}
+obl_pca_4 <- allbus2008 %>% 
+  select(V702:V720) %>% 
+  pca(nfactors = 4, rotate = "oblimin")
+
+obl_pca_4
+```
+
+### Zweite Herangehensweise
+
+**Nutzung des `sjPlot` - Packages!**
+
+Der Vorteil hier: die Funktion wendet automatisch das Kaiser Kriterium an (es werden nur Dimensionen > 1 Eigenvalues extrahiert).
+
+```{r results = "markup"}
+sjp.pca(allbus2008 %>% select(V702:V720), 
+  rotation = "oblimin",  # Wähle die Rotation (ansonsten: "varimax")
+  plot.eigen = T)  # Plot um die Eigenvalues anzuzeigen
+```
+
+**Eine Variation**
+
+```{r results = "markup"}
+sjp.pca(allbus2008 %>% select(V702:V720), 
+  rotation = "oblimin", 
+  type = "tile")
+```
+
+**Es können auch Tabellen erstellten werden**
+
+**ACHTUNG:** Geht nur mit HTML!
+
+```{r}
+sjt.pca(allbus2008 %>% select(V702:V720), 
+  rotation = "oblimin")
+```
+
